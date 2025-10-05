@@ -66,6 +66,7 @@ def edit_media(media_id):
     if form.validate_on_submit():
         media.media_type = form.media_type.data
         media.title = form.title.data
+        media.creator = form.creator.data
         media.years = form.years.data
         
         if form.poster_img.data:
@@ -153,39 +154,3 @@ def delete_media(media_id):
     flash('Media has been deleted.', 'success')
     return redirect(url_for('main.index'))
 
-@main.route('/seed_example')
-@login_required
-def seed_example():
-    # Check if Mr. Robot already exists
-    if Media.query.filter_by(title='Mr. Robot').first():
-        flash('Example data already exists.', 'info')
-        return redirect(url_for('main.index'))
-
-    # Create Mr. Robot
-    mr_robot = Media(title='Mr. Robot', media_type='tv_show', years='2015 - 2019')
-    db.session.add(mr_robot)
-    db.session.flush() # To get mr_robot.id
-
-    # Season 1
-    s1 = Season(season_number=1, media_id=mr_robot.id)
-    db.session.add(s1)
-    db.session.flush()
-    db.session.add_all([
-        Episode(episode_number=1, title='eps1.0_hellofriend.mov', rating=9.1, season_id=s1.id),
-        Episode(episode_number=2, title='eps1.1_ones-and-zer0es.mpeg', rating=8.5, season_id=s1.id),
-        Episode(episode_number=3, title='eps1.2_d3bug.mkv', rating=8.1, season_id=s1.id),
-        Episode(episode_number=4, title='eps1.3_da3m0ns.mp4', rating=7.9, season_id=s1.id),
-    ])
-
-    # Season 2
-    s2 = Season(season_number=2, media_id=mr_robot.id)
-    db.session.add(s2)
-    db.session.flush()
-    db.session.add_all([
-        Episode(episode_number=1, title='eps2.0_unm4sk-pt1.tc', rating=8.1, season_id=s2.id),
-        Episode(episode_number=2, title='eps2.0_unm4sk-pt2.tc', rating=8.1, season_id=s2.id),
-    ])
-
-    db.session.commit()
-    flash('Example TV show "Mr. Robot" added!', 'success')
-    return redirect(url_for('main.media_page', media_id=mr_robot.id))
