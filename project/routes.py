@@ -132,6 +132,7 @@ def add_media():
         new_media = Media(
             media_type=form.media_type.data,
             title=form.title.data,
+            creator=form.creator.data,
             years=form.years.data
         )
         if form.poster_img.data:
