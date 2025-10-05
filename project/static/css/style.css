@@ -61,6 +61,14 @@ body {
     font-size: 2.5rem;
 }
 
+.title-info .creator {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
 .title-info .years {
     color: #aaa;
     margin-bottom: 15px;
