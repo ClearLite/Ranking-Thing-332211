@@ -13,7 +13,6 @@
             <div>
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('main.add_media') }}">Add New</a>
-                    <a href="{{ url_for('main.seed_example') }}">Add Example Show</a>
                     <a href="{{ url_for('main.logout') }}">Logout</a>
                 {% else %}
                     <a href="{{ url_for('main.login') }}">Admin Login</a>
