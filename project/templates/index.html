@@ -5,7 +5,7 @@
 {% block content %}
     <h1>All Media</h1>
     <div class="media-list">
-        {% for media in all-media %}
+        {% for media in all_media %}
             <div class="media-item-link" style="margin-bottom: 10px; background: #222; padding: 10px; border-radius: 5px;">
                 <a href="{{ url_for('main.media_page', media_id=media.id) }}" style="color: #e5e5e5; text-decoration: none;">
                     <strong>{{ media.title }}</strong> ({{ media.years }}) - {{ media.media_type.replace('_', ' ')|title }}
