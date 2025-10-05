@@ -31,6 +31,7 @@ class MediaForm(FlaskForm):
         ('single', 'Single')
     ], validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
+    creator = StringField('Creator/Artist')
     years = StringField('Years (e.g., 2015-2019)')
     poster_img = FileField('Poster Image')
     banner_img = FileField('Banner Image')
