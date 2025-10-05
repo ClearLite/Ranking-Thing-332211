@@ -9,17 +9,19 @@ from werkzeug.security import generate_password_hash
 db = SQLAlchemy()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
 
     # --- Configuration ---
     app.config['SECRET_KEY'] = 'a_very_secret_key_change_this'
-    # Define the database path
-    db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance', 'media_rater.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    # Ensure the instance folder exists. Flask will create it.
+    os.makedirs(app.instance_path, exist_ok=True)
+    
+    # **FIXED LINE:** Correctly set the database path inside the instance folder
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'media_rater.db')}"
+    
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     
-    # Ensure instance folder and upload folder exist
-    os.makedirs(os.path.join(app.instance_path), exist_ok=True)
+    # Ensure upload folder exists (instance folder is handled above)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     db.init_app(app)
