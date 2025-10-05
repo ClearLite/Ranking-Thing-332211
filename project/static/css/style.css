@@ -1,0 +1,196 @@
+/* project/static/css/style.css */
+
+:root {
+    --bg-color: #141414;
+    --card-color: #222;
+    --text-color: #e5e5e5;
+    --border-color: #333;
+    --awesome-color: #4CAF50;
+    --great-color: #8BC34A;
+    --good-color: #CDDC39;
+    --okay-color: #FFC107;
+    --bad-color: #FF9800;
+    --garbage-color: #f44336;
+    --placeholder-color: #444;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- Banner --- */
+.banner {
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: var(--placeholder-color);
+}
+
+/* --- Header Section --- */
+.header-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.poster img, .poster .placeholder {
+    width: 200px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    background-color: var(--placeholder-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+}
+
+.title-info h1 {
+    margin: 10px 0 5px 0;
+    font-size: 2.5rem;
+}
+
+.title-info .years {
+    color: #aaa;
+    margin-bottom: 15px;
+}
+
+.title-info .overall-score {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* --- Rating Grid --- */
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+}
+
+.rating-item {
+    width: 60px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+    position: relative;
+}
+
+.rating-item[data-title]:hover::after {
+    content: attr(data-title);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #111;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 10;
+    font-size: 0.8rem;
+}
+
+/* Rating Colors */
+.rating-item.awesome { background-color: var(--awesome-color); }
+.rating-item.great { background-color: var(--great-color); }
+.rating-item.good { background-color: var(--good-color); }
+.rating-item.okay { background-color: var(--okay-color); }
+.rating-item.bad { background-color: var(--bad-color); }
+.rating-item.garbage { background-color: var(--garbage-color); }
+
+.season-header, .album-header {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+}
+
+/* Movie/Single Display */
+.single-rating-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-color);
+    padding: 40px;
+    border-radius: 8px;
+}
+.single-rating-display .label {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+.single-rating-display .score-box {
+    padding: 20px 40px;
+    font-size: 4rem;
+    font-weight: bold;
+    border-radius: 10px;
+    color: black;
+}
+
+/* --- Navigation & Forms --- */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--card-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+nav a { color: var(--text-color); text-decoration: none; padding: 8px 12px; }
+nav a:hover { background-color: var(--border-color); border-radius: 5px; }
+
+form {
+    background-color: var(--card-color);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 4px;
+}
+
+button, .btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-primary { background-color: var(--awesome-color); color: black; }
+.btn-danger { background-color: var(--garbage-color); color: white; }
+
+.flash-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+}
+.flash-message.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+.flash-message.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
