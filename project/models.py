@@ -13,6 +13,7 @@ class Media(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     media_type = db.Column(db.String(50), nullable=False) # 'tv_show', 'album', 'movie', 'single'
     title = db.Column(db.String(200), nullable=False)
+    creator = db.Column(db.String(150), nullable=True)
     years = db.Column(db.String(50))
     poster_img = db.Column(db.String(200))
     banner_img = db.Column(db.String(200))
