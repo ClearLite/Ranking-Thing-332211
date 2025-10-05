@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit ' + media.title if media else 'Add New Media' }}{% endblock %}
+
+{% block content %}
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <h2>{{ 'Edit ' + media.title if media else 'Add New Media' }}</h2>
+        
+        <div class="form-group">
+            {{ form.media_type.label }} {{ form.media_type() }}
+        </div>
+        <div class="form-group">
+            {{ form.title.label }} {{ form.title() }}
+        </div>
+        <div class="form-group">
+            {{ form.years.label }} {{ form.years() }}
+        </div>
+        <div class="form-group">
+            {{ form.poster_img.label }} {{ form.poster_img() }}
+        </div>
+        <div class="form-group">
+            {{ form.banner_img.label }} {{ form.banner_img() }}
+        </div>
+        
+        <div id="movie-single-fields">
+             <div class="form-group">
+                {{ form.single_rating.label }} {{ form.single_rating() }}
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="tv-show-fields">
+            <h3>Seasons & Episodes</h3>
+            <div id="seasons-container">
+                {% if media and media.media_type == 'tv_show' %}
+                    {% for season in media.seasons %}
+                    <div class="season-block" style="background: #333; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                        Season #: <input type="number" name="season_number_{{ loop.index }}" value="{{ season.season_number }}">
+                        <div class="episodes-container">
+                            {% for episode in season.episodes %}
+                            <div class="episode-row" style="display: flex; gap: 5px; margin-top: 5px;">
+                                E#: <input type="number" name="ep_number_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.episode_number }}" style="width: 60px;">
+                                Title: <input type="text" name="ep_title_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.title }}">
+                                Rating: <input type="text" name="ep_rating_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.rating or '' }}" style="width: 60px;">
+                            </div>
+                            {% endfor %}
+                        </div>
+                         <button type="button" onclick="addEpisode(this.parentElement)">+ Add Episode</button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <button type="button" onclick="addSeason()">+ Add Season</button>
+        </div>
+
+        <div id="album-fields">
+            <h3>Tracks</h3>
+            <div id="tracks-container">
+                 {% if media and media.media_type == 'album' %}
+                    {% for track in media.tracks %}
+                    <div class="track-row" style="display: flex; gap: 5px; margin-top: 5px;">
+                        T#: <input type="number" name="track_number_{{ loop.index }}" value="{{ track.track_number }}" style="width: 60px;">
+                        Title: <input type="text" name="track_title_{{ loop.index }}" value="{{ track.title }}">
+                        Rating: <input type="text" name="track_rating_{{ loop.index }}" value="{{ track.rating or '' }}" style="width: 60px;">
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+             <button type="button" onclick="addTrack()">+ Add Track</button>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <script>
+        // JS to toggle fields based on selected media type
+        const mediaTypeSelect = document.getElementById('media_type');
+        const movieSingleFields = document.getElementById('movie-single-fields');
+        const tvShowFields = document.getElementById('tv-show-fields');
+        const albumFields = document.getElementById('album-fields');
+
+        function toggleFields() {
+            const selectedType = mediaTypeSelect.value;
+            movieSingleFields.style.display = (selectedType === 'movie' || selectedType === 'single') ? 'block' : 'none';
+            tvShowFields.style.display = (selectedType === 'tv_show') ? 'block' : 'none';
+            albumFields.style.display = (selectedType === 'album') ? 'block' : 'none';
+        }
+        
+        mediaTypeSelect.addEventListener('change', toggleFields);
+        document.addEventListener('DOMContentLoaded', toggleFields); // run on page load
+
+        // --- JS for dynamically adding seasons/episodes/tracks ---
+        let seasonCount = {{ media.seasons|length if media and media.media_type == 'tv_show' else 0 }};
+        function addSeason() {
+            seasonCount++;
+            const container = document.getElementById('seasons-container');
+            const newSeason = document.createElement('div');
+            newSeason.className = 'season-block';
+            newSeason.style = "background: #333; padding: 10px; margin-bottom: 10px; border-radius: 5px;";
+            newSeason.innerHTML = `
+                Season #: <input type="number" name="season_number_${seasonCount}" value="${seasonCount}">
+                <div class="episodes-container"></div>
+                <button type="button" onclick="addEpisode(this.parentElement)">+ Add Episode</button>`;
+            container.appendChild(newSeason);
+        }
+
+        function addEpisode(seasonBlock) {
+            const container = seasonBlock.querySelector('.episodes-container');
+            const seasonIndex = Array.from(document.getElementById('seasons-container').children).indexOf(seasonBlock) + 1;
+            const episodeCount = container.children.length + 1;
+            const newEpisode = document.createElement('div');
+            newEpisode.className = 'episode-row';
+            newEpisode.style = "display: flex; gap: 5px; margin-top: 5px;";
+            newEpisode.innerHTML = `
+                E#: <input type="number" name="ep_number_${seasonIndex}_${episodeCount}" value="${episodeCount}" style="width: 60px;">
+                Title: <input type="text" name="ep_title_${seasonIndex}_${episodeCount}">
+                Rating: <input type="text" name="ep_rating_${seasonIndex}_${episodeCount}" style="width: 60px;">`;
+            container.appendChild(newEpisode);
+        }
+        
+        let trackCount = {{ media.tracks|length if media and media.media_type == 'album' else 0 }};
+        function addTrack() {
+            trackCount++;
+            const container = document.getElementById('tracks-container');
+            const newTrack = document.createElement('div');
+            newTrack.className = 'track-row';
+            newTrack.style = "display: flex; gap: 5px; margin-top: 5px;";
+            newTrack.innerHTML = `
+                T#: <input type="number" name="track_number_${trackCount}" value="${trackCount}" style="width: 60px;">
+                Title: <input type="text" name="track_title_${trackCount}">
+                Rating: <input type="text" name="track_rating_${trackCount}" style="width: 60px;">`;
+            container.appendChild(newTrack);
+        }
+
+    </script>
+{% endblock %}
