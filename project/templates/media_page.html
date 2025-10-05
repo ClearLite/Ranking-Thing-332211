@@ -15,6 +15,9 @@
         </div>
         <div class="title-info">
             <h1>{{ media.title }}</h1>
+            {% if media.creator %}
+                <p class="creator">{{ media.creator }}</p>
+            {% endif %}
             <p class="years">{{ media.years }}</p>
             <div class="overall-score">
                 ⭐ {{ media.overall_score }}
