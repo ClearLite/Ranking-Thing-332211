@@ -35,7 +35,9 @@ class MediaForm(FlaskForm):
     years = StringField('Years (e.g., 2015-2019)')
     poster_img = FileField('Poster Image')
     banner_img = FileField('Banner Image')
-    single_rating = FloatField('Rating (for Movie/Single)', validators=[Optional(), NumberRange(min=0, max=10)])
+    
+    # UPDATED: This field is now for all media types
+    official_rating = FloatField('Official Rating', validators=[Optional(), NumberRange(min=0, max=10)])
     
     # Dynamic fields for seasons/tracks will be handled in the route
     submit = SubmitField('Save Media')
