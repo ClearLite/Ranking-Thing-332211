@@ -19,11 +19,16 @@
                 <p class="creator">{{ media.creator }}</p>
             {% endif %}
             <p class="years">{{ media.years }}</p>
-            <div class="overall-score">
-                ⭐ {{ media.overall_score }}
-            </div>
             
-            {# NEW: Display the calculated average as a secondary detail #}
+            {# --- NEW INTEGRATED SCORE BOX --- #}
+            {# This section now consistently displays the official score for ALL media types #}
+            <div class="score-display-container">
+                <div class="score-label">Official Score</div>
+                <div class="overall-score-box {{ get_rating_class(media.overall_score) }}">
+                    {{ media.overall_score }}
+                </div>
+            </div>
+
             {% if media.media_type in ['tv_show', 'album'] and media.calculated_average_score is not none %}
             <div class="calculated-avg" style="margin-top: 10px; color: #aaa; font-size: 1rem;">
                 (Average of parts: {{ media.calculated_average_score }})
@@ -40,7 +45,11 @@
             {% endif %}
         </div>
     </div>
+    
+    {# The HR is now only shown if there is content below it #}
+    {% if media.media_type in ['tv_show', 'album'] and (media.seasons or media.tracks) %}
     <hr>
+    {% endif %}
     
     {% if media.media_type == 'tv_show' %}
         {% for season in media.seasons | sort(attribute='season_number') %}
@@ -62,13 +71,7 @@
                 </div>
             {% endfor %}
         </div>
-    {% elif media.media_type in ['movie', 'single'] %}
-        <div class="single-rating-display">
-            <div class="label">Official Score</div>
-            <div class="score-box {{ get_rating_class(media.overall_score) }}">
-                {{ media.overall_score }}
-            </div>
-        </div>
     {% endif %}
+    {# --- REMOVED the old 'movie'/'single' display block from here --- #}
 
 {% endblock %}
