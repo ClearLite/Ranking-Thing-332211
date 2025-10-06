@@ -4,16 +4,54 @@
 
 {% block content %}
     <h1>All Media</h1>
-    <div class="media-list">
+
+    <!-- Filter and Sort Form -->
+    <form method="GET" action="{{ url_for('main.index') }}" class="filter-form">
+        <div class="form-group">
+            <label for="filter">Filter by Type</label>
+            <select name="filter" id="filter" onchange="this.form.submit()">
+                <option value="all" {% if current_filter == 'all' %}selected{% endif %}>All Types</option>
+                <option value="movie" {% if current_filter == 'movie' %}selected{% endif %}>Movies</option>
+                <option value="tv_show" {% if current_filter == 'tv_show' %}selected{% endif %}>TV Shows</option>
+                <option value="album" {% if current_filter == 'album' %}selected{% endif %}>Albums</option>
+                <option value="single" {% if current_filter == 'single' %}selected{% endif %}>Singles</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sort">Sort By</label>
+            <select name="sort" id="sort" onchange="this.form.submit()">
+                <option value="title_asc" {% if current_sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
+                <option value="score_desc" {% if current_sort == 'score_desc' %}selected{% endif %}>Highest Rated</option>
+                <option value="score_asc" {% if current_sort == 'score_asc' %}selected{% endif %}>Lowest Rated</option>
+            </select>
+        </div>
+    </form>
+
+    <!-- Media Grid -->
+    <div class="media-grid">
         {% for media in all_media %}
-            <div class="media-item-link" style="margin-bottom: 10px; background: #222; padding: 10px; border-radius: 5px;">
-                <a href="{{ url_for('main.media_page', media_id=media.id) }}" style="color: #e5e5e5; text-decoration: none;">
-                    <strong>{{ media.title }}</strong> ({{ media.years }}) - {{ media.media_type.replace('_', ' ')|title }}
-                    - Overall: {{ media.overall_score }}
-                </a>
-            </div>
+            {# Add a class for square media types #}
+            <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
+               class="media-card {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}">
+                
+                <div class="media-card-poster">
+                    {% if media.poster_img %}
+                        <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
+                    {% else %}
+                        <div class="placeholder">?</div>
+                    {% endif %}
+                </div>
+
+                <div class="media-card-info">
+                    <h3>{{ media.title }}</h3>
+                    {% if media.creator %}
+                        <p class="creator">{{ media.creator }}</p>
+                    {% endif %}
+                    <p class="score">⭐ {{ media.overall_score }}</p>
+                </div>
+            </a>
         {% else %}
-            <p>No media has been added yet.</p>
+            <p>No media found for the selected filter.</p>
         {% endfor %}
     </div>
 {% endblock %}
