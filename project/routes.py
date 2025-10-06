@@ -91,27 +91,28 @@ def edit_media(media_id):
         media.creator = form.creator.data
         media.years = form.years.data
         
+        # CHANGED: Save the official rating for all media types.
+        media.official_rating = form.official_rating.data
+
         if form.poster_img.data:
             media.poster_img = save_file(form.poster_img.data)
         if form.banner_img.data:
             media.banner_img = save_file(form.banner_img.data)
 
-        if media.media_type in ['movie', 'single']:
-            media.single_rating = form.single_rating.data
-        else:
-            media.single_rating = None
-            # Clear old data if type changed
-            if media.media_type == 'tv_show':
-                for track in media.tracks: db.session.delete(track)
-            elif media.media_type == 'album':
-                for season in media.seasons: db.session.delete(season)
+        # CHANGED: Removed old conditional logic for single_rating.
+        # This logic now just clears child items if the type has changed.
+        if media.media_type == 'tv_show':
+            # This deletes any tracks if the type was changed from 'album'
+            for track in media.tracks: db.session.delete(track)
+        elif media.media_type == 'album':
+            # This deletes any seasons if the type was changed from 'tv_show'
+            for season in media.seasons: db.session.delete(season)
 
         db.session.commit()
         
         # --- Handle Seasons/Episodes and Tracks ---
         if media.media_type == 'tv_show':
-            # This is a simplified handler. A real app would use JS to dynamically add/remove fields.
-            # Here, we process what's submitted.
+            # This handler deletes all existing seasons/episodes and rebuilds them from the form.
             Season.query.filter_by(media_id=media.id).delete()
             for s_key, s_val in request.form.items():
                 if s_key.startswith('season_number_'):
@@ -155,7 +156,9 @@ def add_media():
             media_type=form.media_type.data,
             title=form.title.data,
             creator=form.creator.data,
-            years=form.years.data
+            years=form.years.data,
+            # Also save the official rating on creation
+            official_rating=form.official_rating.data
         )
         if form.poster_img.data:
             new_media.poster_img = save_file(form.poster_img.data)
@@ -176,4 +179,3 @@ def delete_media(media_id):
     db.session.commit()
     flash('Media has been deleted.', 'success')
     return redirect(url_for('main.index'))
-
