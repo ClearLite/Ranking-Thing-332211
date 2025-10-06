@@ -18,21 +18,17 @@ class Media(db.Model):
     poster_img = db.Column(db.String(200))
     banner_img = db.Column(db.String(200))
     
-    # Relationships
     seasons = db.relationship('Season', backref='media', cascade="all, delete-orphan")
     tracks = db.relationship('Track', backref='media', cascade="all, delete-orphan")
     
-    # RENAMED: This field now holds the official score for ALL media types.
     official_rating = db.Column(db.Float)
 
     @property
     def overall_score(self):
-        """ The official, user-defined score for the media item. """
         return self.official_rating if self.official_rating is not None else 0.0
 
     @property
     def calculated_average_score(self):
-        """ Calculates the average score from child items (episodes/tracks). """
         ratings = []
         if self.media_type == 'tv_show':
             for season in self.seasons:
@@ -44,7 +40,6 @@ class Media(db.Model):
                 if track.rating is not None:
                     ratings.append(track.rating)
         else:
-            # Not applicable for types without child items
             return None
 
         if not ratings:
@@ -56,6 +51,15 @@ class Season(db.Model):
     season_number = db.Column(db.Integer, nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
     episodes = db.relationship('Episode', backref='season', cascade="all, delete-orphan", order_by="Episode.episode_number")
+
+    # NEW: Property to calculate the average score of a season
+    @property
+    def average_score(self):
+        ratings = [ep.rating for ep in self.episodes if ep.rating is not None]
+        if not ratings:
+            return 0.0
+        return round(statistics.mean(ratings), 1)
+
 
 class Episode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
