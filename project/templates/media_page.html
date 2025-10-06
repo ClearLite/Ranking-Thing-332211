@@ -3,61 +3,76 @@
 {% block title %}{{ media.title }}{% endblock %}
 
 {% block content %}
-    <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
+    {# Assign accent color class to a variable for reuse #}
+    {% set accent_class = 
+        'movie-accent-text' if media.media_type == 'movie' else
+        'tv-accent-text' if media.media_type == 'tv_show' else
+        'album-accent-text' if media.media_type == 'album' else
+        'single-accent-text' %}
+
+    <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' an d media.banner_img) if media.banner_img else '' }}');"></div>
     
-    <div class="header-section">
-        <div class="poster {% if media.media_type in ['album', 'single'] %}poster-square{% endif %}">
-            {% if media.poster_img %}
-                <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
-            {% else %}
-                <div class="placeholder">?</div>
-            {% endif %}
-        </div>
-        <div class="title-info">
-            <h1>{{ media.title }}</h1>
-            {% if media.creator %}
-                <p class="creator">{{ media.creator }}</p>
-            {% endif %}
-            <p class="years">{{ media.years }}</p>
-            
-            {# --- NEW INTEGRATED SCORE BOX --- #}
-            {# This section now consistently displays the official score for ALL media types #}
-            <div class="score-display-container">
-                <div class="score-label">Official Score</div>
-                <div class="overall-score-box {{ get_rating_class(media.overall_score) }}">
-                    {{ media.overall_score }}
-                </div>
+    <!-- NEW: Header is now wrapped in a styled card -->
+    <div class="header-card">
+        <div class="header-section">
+            <div class="poster {% if media.media_type in ['album', 'single'] %}poster-square{% endif %}">
+                {% if media.poster_img %}
+                    <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
+                {% else %}
+                    <div class="placeholder">?</div>
+                {% endif %}
             </div>
-
-            {% if media.media_type in ['tv_show', 'album'] and media.calculated_average_score is not none %}
-            <div class="calculated-avg" style="margin-top: 10px; color: #aaa; font-size: 1rem;">
-                (Average of parts: {{ media.calculated_average_score }})
-            </div>
-            {% endif %}
-
-            {% if current_user.is_authenticated %}
-                <div style="margin-top: 20px;">
-                    <a href="{{ url_for('main.edit_media', media_id=media.id) }}" class="btn btn-primary">Edit</a>
-                    <form action="{{ url_for('main.delete_media', media_id=media.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this?');">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
+            <div class="title-info">
+                <!-- NEW: Title uses the accent color -->
+                <h1 class="{{ accent_class }}">{{ media.title }}</h1>
+                {% if media.creator %}
+                    <p class="creator">{{ media.creator }}</p>
+                {% endif %}
+                <p class="years">{{ media.years }}</p>
+                
+                <div class="score-display-container">
+                    <div class="score-label">Official Score</div>
+                    <div class="overall-score-box {{ get_rating_class(media.overall_score) }}">
+                        {{ media.overall_score }}
+                    </div>
                 </div>
-            {% endif %}
+
+                {% if media.media_type in ['tv_show', 'album'] and media.calculated_average_score is not none %}
+                <div class="calculated-avg">
+                    (Average of parts: {{ media.calculated_average_score }})
+                </div>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
+                    <div class="admin-actions">
+                        <!-- NEW: Edit button uses primary accent color -->
+                        <a href="{{ url_for('main.edit_media', media_id=media.id) }}" class="btn btn-primary">Edit</a>
+                        <form action="{{ url_for('main.delete_media', media_id=media.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this?');">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
     
-    {# The HR is now only shown if there is content below it #}
+    {# Only show divider and content below if there are items to show #}
     {% if media.media_type in ['tv_show', 'album'] and (media.seasons or media.tracks) %}
-    <hr>
+        <!-- NEW: Dynamic gradient divider -->
+        <div class="section-divider {{ media.media_type }}-divider"></div>
     {% endif %}
     
     {% if media.media_type == 'tv_show' %}
         {% for season in media.seasons | sort(attribute='season_number') %}
-            <h2 class="season-header">Season {{ season.season_number }}</h2>
+            <div class="season-header">
+                <h2>Season {{ season.season_number }}</h2>
+                <!-- NEW: Display the calculated average score for the season -->
+                <span class="season-avg">Avg: {{ season.average_score }}</span>
+            </div>
             <div class="ratings-grid">
                 {% for episode in season.episodes %}
                     <div class="rating-item {{ get_rating_class(episode.rating) }}" data-title="E{{ episode.episode_number }}: {{ episode.title }}">
-                        {{ episode.rating }}
+                        {{ episode.rating if episode.rating is not none else 'N/A' }}
                     </div>
                 {% endfor %}
             </div>
@@ -67,11 +82,10 @@
         <div class="ratings-grid">
             {% for track in media.tracks | sort(attribute='track_number') %}
                 <div class="rating-item {{ get_rating_class(track.rating) }}" data-title="T{{ track.track_number }}: {{ track.title }}">
-                    {{ track.rating }}
+                    {{ track.rating if track.rating is not none else 'N/A' }}
                 </div>
             {% endfor %}
         </div>
     {% endif %}
-    {# --- REMOVED the old 'movie'/'single' display block from here --- #}
 
 {% endblock %}
