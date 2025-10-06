@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(100), nullable=False)
 
 class TitleStyle(db.Model):
-    # --- NEW: This model will live in the 'colors' database ---
+    # This model will live in the 'colors' database
     __bind_key__ = 'colors'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -19,9 +19,8 @@ class TitleStyle(db.Model):
     token_index = db.Column(db.Integer, nullable=False)
     color1 = db.Column(db.String(7), nullable=False, default='#FFFFFF')
     color2 = db.Column(db.String(7), nullable=True)
-    media_id = db.Column(db.Integer, nullable=False) # This is just an ID, not a formal foreign key
+    media_id = db.Column(db.Integer, nullable=False)
 
-    # Helper function to make passing data to Jinja easier
     def to_dict(self):
         return {
             'token': self.token,
@@ -45,15 +44,53 @@ class Media(db.Model):
     
     official_rating = db.Column(db.Float)
 
-    # --- NEW: A property that manually fetches styles from the other database ---
-    # This perfectly mimics a relationship for the templates.
     @property
     def title_styles(self):
         return TitleStyle.query.filter_by(media_id=self.id).order_by(TitleStyle.token_index).all()
 
+    # --- RESTORED FUNCTION BODY ---
     @property
     def overall_score(self):
-        # ... same as before ...
-    # ... other properties ...
+        return self.official_rating if self.official_rating is not None else 0.0
 
-# ... Season, Episode, and Track models remain unchanged ...
+    # --- RESTORED FUNCTION BODY ---
+    @property
+    def calculated_average_score(self):
+        ratings = []
+        if self.media_type == 'tv_show':
+            for season in self.seasons:
+                for episode in season.episodes:
+                    if episode.rating is not None:
+                        ratings.append(episode.rating)
+        elif self.media_type == 'album':
+            for track in self.tracks:
+                if track.rating is not None:
+                    ratings.append(track.rating)
+        else:
+            return None
+        return round(statistics.mean(ratings), 1) if ratings else 0.0
+
+class Season(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    season_number = db.Column(db.Integer, nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
+    episodes = db.relationship('Episode', backref='season', cascade="all, delete-orphan", order_by="Episode.episode_number")
+
+    @property
+    def average_score(self):
+        ratings = [ep.rating for ep in self.episodes if ep.rating is not None]
+        return round(statistics.mean(ratings), 1) if ratings else 0.0
+
+class Episode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    episode_number = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(200))
+    rating = db.Column(db.Float)
+    season_id = db.Column(db.Integer, db.ForeignKey('season.id'), nullable=False)
+
+class Track(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    track_number = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(200))
+    rating = db.Column(db.Float)
+    media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
