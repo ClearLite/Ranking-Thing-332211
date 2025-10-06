@@ -22,11 +22,17 @@ class Media(db.Model):
     seasons = db.relationship('Season', backref='media', cascade="all, delete-orphan")
     tracks = db.relationship('Track', backref='media', cascade="all, delete-orphan")
     
-    # For movies and singles
-    single_rating = db.Column(db.Float)
+    # RENAMED: This field now holds the official score for ALL media types.
+    official_rating = db.Column(db.Float)
 
     @property
     def overall_score(self):
+        """ The official, user-defined score for the media item. """
+        return self.official_rating if self.official_rating is not None else 0.0
+
+    @property
+    def calculated_average_score(self):
+        """ Calculates the average score from child items (episodes/tracks). """
         ratings = []
         if self.media_type == 'tv_show':
             for season in self.seasons:
@@ -37,8 +43,9 @@ class Media(db.Model):
             for track in self.tracks:
                 if track.rating is not None:
                     ratings.append(track.rating)
-        elif self.media_type in ['movie', 'single']:
-            return self.single_rating if self.single_rating else 0.0
+        else:
+            # Not applicable for types without child items
+            return None
 
         if not ratings:
             return 0.0
