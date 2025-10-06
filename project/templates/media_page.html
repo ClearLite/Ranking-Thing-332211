@@ -10,7 +10,8 @@
         'album-accent-text' if media.media_type == 'album' else
         'single-accent-text' %}
 
-    <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' an d media.banner_img) if media.banner_img else '' }}');"></div>
+    {# --- THIS IS THE CORRECTED LINE --- #}
+    <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
     <!-- NEW: Header is now wrapped in a styled card -->
     <div class="header-card">
