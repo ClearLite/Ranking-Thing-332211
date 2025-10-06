@@ -5,7 +5,6 @@
 {% block content %}
     <h1>All Media</h1>
 
-    <!-- Filter and Sort Form -->
     <form method="GET" action="{{ url_for('main.index') }}" class="filter-form">
         <div class="form-group">
             <label for="filter">Filter by Type</label>
@@ -27,10 +26,16 @@
         </div>
     </form>
 
-    <!-- Media Grid -->
+    <!-- NEW: Color Legend -->
+    <div class="legend">
+        <span class="legend-item"><span class="legend-color-box movie-type"></span> Movie</span>
+        <span class="legend-item"><span class="legend-color-box tv-type"></span> TV Show</span>
+        <span class="legend-item"><span class="legend-color-box album-type"></span> Album</span>
+        <span class="legend-item"><span class="legend-color-box single-type"></span> Single</span>
+    </div>
+
     <div class="media-grid">
         {% for media in all_media %}
-            {# Add a class for square media types #}
             <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
                class="media-card {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}">
                 
@@ -42,7 +47,13 @@
                     {% endif %}
                 </div>
 
-                <div class="media-card-info">
+                {# UPDATED: Dynamically adds a color class based on media type #}
+                <div class="media-card-info 
+                    {% if media.media_type == 'movie' %}movie-type
+                    {% elif media.media_type == 'tv_show' %}tv-type
+                    {% elif media.media_type == 'album' %}album-type
+                    {% elif media.media_type == 'single' %}single-type
+                    {% endif %}">
                     <h3>{{ media.title }}</h3>
                     {% if media.creator %}
                         <p class="creator">{{ media.creator }}</p>
