@@ -22,11 +22,17 @@ class Media(db.Model):
     seasons = db.relationship('Season', backref='media', cascade="all, delete-orphan")
     tracks = db.relationship('Track', backref='media', cascade="all, delete-orphan")
     
-    # For movies and singles
-    single_rating = db.Column(db.Float)
+    # RENAMED: This will now store the admin-defined rating for ALL media types
+    official_rating = db.Column(db.Float)
 
     @property
     def overall_score(self):
+        # The primary score is now ALWAYS the official admin rating
+        return self.official_rating if self.official_rating is not None else 0.0
+
+    @property
+    def calculated_average_score(self):
+        # NEW: This property performs the old calculation for TV/Albums
         ratings = []
         if self.media_type == 'tv_show':
             for season in self.seasons:
@@ -37,11 +43,9 @@ class Media(db.Model):
             for track in self.tracks:
                 if track.rating is not None:
                     ratings.append(track.rating)
-        elif self.media_type in ['movie', 'single']:
-            return self.single_rating if self.single_rating else 0.0
-
+        
         if not ratings:
-            return 0.0
+            return None # Return None if no ratings to average
         return round(statistics.mean(ratings), 1)
 
 class Season(db.Model):
