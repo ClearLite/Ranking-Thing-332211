@@ -13,15 +13,17 @@ def create_app():
 
     # --- Configuration ---
     app.config['SECRET_KEY'] = 'a_very_secret_key_change_this'
-    # Ensure the instance folder exists. Flask will create it.
     os.makedirs(app.instance_path, exist_ok=True)
     
-    # **FIXED LINE:** Correctly set the database path inside the instance folder
+    # Define the primary (default) database
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'media_rater.db')}"
     
-    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+    # --- NEW: Define the second database for title styles ---
+    app.config['SQLALCHEMY_BINDS'] = {
+        'colors': f"sqlite:///{os.path.join(app.instance_path, 'title_styles.db')}"
+    }
     
-    # Ensure upload folder exists (instance folder is handled above)
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     db.init_app(app)
@@ -31,22 +33,26 @@ def create_app():
     login_manager.login_view = 'main.login'
     login_manager.init_app(app)
 
-    from .models import User
+    # Import models here so they are registered with the db instance
+    from . import models
+
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return models.User.query.get(int(user_id))
 
     # --- Blueprints (Routes) ---
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    # --- Create Database and Admin User ---
+    # --- Create Databases and Admin User ---
     with app.app_context():
-        db.create_all()
-        # Create Admin User if not exists
-        if not User.query.filter_by(username='Ryan').first():
+        # Flask-SQLAlchemy is smart enough to create all tables in their respective databases
+        db.create_all() 
+        
+        # This logic only touches the default (media_rater.db) database
+        if not models.User.query.filter_by(username='Ryan').first():
             hashed_password = generate_password_hash('06242005', method='pbkdf2:sha256')
-            admin_user = User(username='Ryan', password=hashed_password)
+            admin_user = models.User(username='Ryan', password=hashed_password)
             db.session.add(admin_user)
             db.session.commit()
 
