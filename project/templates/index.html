@@ -26,18 +26,26 @@
         </div>
     </form>
 
-    <!-- NEW: Color Legend -->
+    <!-- Legend -->
     <div class="legend">
-        <span class="legend-item"><span class="legend-color-box movie-type"></span> Movie</span>
-        <span class="legend-item"><span class="legend-color-box tv-type"></span> TV Show</span>
-        <span class="legend-item"><span class="legend-color-box album-type"></span> Album</span>
-        <span class="legend-item"><span class="legend-color-box single-type"></span> Single</span>
+        {# FIXED: Using unique classes for the legend colors now #}
+        <span class="legend-item"><span class="legend-color-box legend-movie"></span> Movie</span>
+        <span class="legend-item"><span class="legend-color-box legend-tv"></span> TV Show</span>
+        <span class="legend-item"><span class="legend-color-box legend-album"></span> Album</span>
+        <span class="legend-item"><span class="legend-color-box legend-single"></span> Single</span>
     </div>
 
     <div class="media-grid">
         {% for media in all_media %}
+            {# UPDATED: Added a dynamic border class to the <a> tag for the hover effect #}
             <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
-               class="media-card {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}">
+               class="media-card 
+                    {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}
+                    {% if media.media_type == 'movie' %}movie-border
+                    {% elif media.media_type == 'tv_show' %}tv-border
+                    {% elif media.media_type == 'album' %}album-border
+                    {% elif media.media_type == 'single' %}single-border
+                    {% endif %}">
                 
                 <div class="media-card-poster">
                     {% if media.poster_img %}
@@ -47,7 +55,6 @@
                     {% endif %}
                 </div>
 
-                {# UPDATED: Dynamically adds a color class based on media type #}
                 <div class="media-card-info 
                     {% if media.media_type == 'movie' %}movie-type
                     {% elif media.media_type == 'tv_show' %}tv-type
