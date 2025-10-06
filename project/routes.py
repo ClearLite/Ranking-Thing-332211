@@ -6,7 +6,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from . import db
-from .models import User, Media, Season, Episode, Track
+from .models import User, Media, Season, Episode, Track, TitleStyle # Import the new TitleStyle model
 from .forms import LoginForm, MediaForm
 
 main = Blueprint('main', __name__)
@@ -22,24 +22,21 @@ def get_rating_class(rating):
 
 @main.route('/')
 def index():
-    # --- START: NEW FILTERING AND SORTING LOGIC ---
-    sort_by = request.args.get('sort', 'title_asc') # Default sort
-    filter_type = request.args.get('filter', 'all')   # Default filter
+    sort_by = request.args.get('sort', 'title_asc')
+    filter_type = request.args.get('filter', 'all')
 
     query = Media.query
 
-    # Apply filter
     if filter_type != 'all':
         query = query.filter(Media.media_type == filter_type)
 
     all_media_list = query.all()
 
-    # Apply sorting in Python since overall_score is a property
     if sort_by == 'score_desc':
         all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
     elif sort_by == 'score_asc':
         all_media_list.sort(key=lambda m: m.overall_score)
-    else: # Default: title_asc
+    else:
         all_media_list.sort(key=lambda m: m.title.lower())
     
     return render_template('index.html', 
@@ -86,12 +83,11 @@ def edit_media(media_id):
     form = MediaForm(obj=media)
 
     if form.validate_on_submit():
+        # --- Update Media object in the main database ---
         media.media_type = form.media_type.data
         media.title = form.title.data
         media.creator = form.creator.data
         media.years = form.years.data
-        
-        # CHANGED: Save the official rating for all media types.
         media.official_rating = form.official_rating.data
 
         if form.poster_img.data:
@@ -99,27 +95,44 @@ def edit_media(media_id):
         if form.banner_img.data:
             media.banner_img = save_file(form.banner_img.data)
 
-        # CHANGED: Removed old conditional logic for single_rating.
-        # This logic now just clears child items if the type has changed.
+        # --- Process Title Styling in the separate 'colors' database ---
+        # 1. Delete all existing styles for this media item
+        TitleStyle.query.filter_by(media_id=media.id).delete()
+
+        # 2. Collect and create new styles from the form
+        token_index = 0
+        while f'token_{token_index}' in request.form:
+            token = request.form.get(f'token_{token_index}')
+            color1 = request.form.get(f'color1_{token_index}')
+            color2 = request.form.get(f'color2_{token_index}')
+            
+            if token: # Only process if token exists
+                new_style = TitleStyle(
+                    token=token,
+                    token_index=token_index,
+                    color1=color1,
+                    color2=color2 if color2 and color2 != '#000000' else None,
+                    media_id=media.id
+                )
+                db.session.add(new_style)
+            
+            token_index += 1
+        
+        # --- Handle cleanup of child items (Seasons/Tracks) if type changed ---
         if media.media_type == 'tv_show':
-            # This deletes any tracks if the type was changed from 'album'
             for track in media.tracks: db.session.delete(track)
         elif media.media_type == 'album':
-            # This deletes any seasons if the type was changed from 'tv_show'
             for season in media.seasons: db.session.delete(season)
-
-        db.session.commit()
         
-        # --- Handle Seasons/Episodes and Tracks ---
+        # --- Handle Seasons/Episodes and Tracks data ---
         if media.media_type == 'tv_show':
-            # This handler deletes all existing seasons/episodes and rebuilds them from the form.
             Season.query.filter_by(media_id=media.id).delete()
             for s_key, s_val in request.form.items():
                 if s_key.startswith('season_number_'):
                     s_idx = s_key.split('_')[-1]
                     new_season = Season(season_number=int(s_val), media_id=media.id)
                     db.session.add(new_season)
-                    db.session.flush() # Get the new_season.id
+                    db.session.flush()
 
                     for e_key, e_val in request.form.items():
                         if e_key.startswith(f'ep_number_{s_idx}_'):
@@ -157,7 +170,6 @@ def add_media():
             title=form.title.data,
             creator=form.creator.data,
             years=form.years.data,
-            # Also save the official rating on creation
             official_rating=form.official_rating.data
         )
         if form.poster_img.data:
@@ -167,7 +179,7 @@ def add_media():
         
         db.session.add(new_media)
         db.session.commit()
-        flash('New media created. You can now add episodes/tracks.', 'success')
+        flash('New media created. You can now customize it.', 'success')
         return redirect(url_for('main.edit_media', media_id=new_media.id))
     return render_template('edit_media.html', form=form, media=None)
 
@@ -175,7 +187,14 @@ def add_media():
 @login_required
 def delete_media(media_id):
     media_to_delete = Media.query.get_or_404(media_id)
+    
+    # Manually delete associated styles from the 'colors' database first
+    TitleStyle.query.filter_by(media_id=media_id).delete()
+    
+    # Now delete the media item from the main database
     db.session.delete(media_to_delete)
+    
+    # Commit all changes to both databases
     db.session.commit()
     flash('Media has been deleted.', 'success')
     return redirect(url_for('main.index'))
