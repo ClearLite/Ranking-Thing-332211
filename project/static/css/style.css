@@ -154,3 +154,70 @@ button:hover, .btn:hover { filter: brightness(1.15); }
 .media-card-info h3 { font-size: 1rem; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-card-info .creator { font-size: 0.8rem; color: #aaa; margin: 0 0 5px 0; }
 .media-card-info .score { font-size: 0.9rem; font-weight: bold; margin: 0; }
+
+/* --- Custom Title Rendering --- */
+.custom-title-container {
+    line-height: 1.2;
+}
+.custom-title-container h1 {
+    font-size: 2.5rem; /* Ensure consistent size */
+    margin: 0 0 5px 0;
+}
+.gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+/* --- Admin Title Styler UI --- */
+.title-styler {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.styler-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.styler-row:last-child {
+    border-bottom: none;
+}
+.styler-token {
+    font-weight: bold;
+    font-size: 1.2rem;
+    flex-basis: 30%;
+    overflow-wrap: break-word;
+}
+.styler-inputs {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.styler-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.styler-inputs input[type="color"] {
+    width: 40px;
+    height: 30px;
+    padding: 2px;
+    border-radius: 4px;
+    background: none;
+    border: 1px solid var(--border-color);
+}
+.btn-reset {
+    background-color: #444;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
+}
