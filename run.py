@@ -1,7 +1,6 @@
 # run.py
 
 from project import create_app, db
-from flask_migrate import Migrate
 
 # Create the Flask app instance
 app = create_app()
