@@ -26,10 +26,9 @@
             {{ form.banner_img.label }} {{ form.banner_img() }}
         </div>
         
-        <div id="movie-single-fields">
-             <div class="form-group">
-                {{ form.single_rating.label }} {{ form.single_rating() }}
-            </div>
+        {# CHANGED: This field is now always visible for all media types #}
+        <div class="form-group">
+            {{ form.official_rating.label }} {{ form.official_rating() }}
         </div>
 
         <hr>
@@ -82,13 +81,12 @@
     <script>
         // JS to toggle fields based on selected media type
         const mediaTypeSelect = document.getElementById('media_type');
-        const movieSingleFields = document.getElementById('movie-single-fields');
         const tvShowFields = document.getElementById('tv-show-fields');
         const albumFields = document.getElementById('album-fields');
 
         function toggleFields() {
             const selectedType = mediaTypeSelect.value;
-            movieSingleFields.style.display = (selectedType === 'movie' || selectedType === 'single') ? 'block' : 'none';
+            // CHANGED: The official_rating field is no longer toggled
             tvShowFields.style.display = (selectedType === 'tv_show') ? 'block' : 'none';
             albumFields.style.display = (selectedType === 'album') ? 'block' : 'none';
         }
