@@ -1,13 +1,14 @@
 /* project/static/css/style.css */
 
 :root {
-    --bg-color: #141414;
-    --card-color: #222;
+    /* --- CORE THEME COLORS --- */
+    --bg-color: #121212; /* Slightly darker background */
+    --card-color: #1e1e1e;
     --text-color: #e5e5e5;
-    --border-color: #333;
+    --border-color: #2c2c2c; /* Subtle border for definition */
     --placeholder-color: #444;
 
-    /* Rating Colors */
+    /* --- RATING COLORS (UNCHANGED) --- */
     --awesome-color: #4CAF50;
     --great-color: #8BC34A;
     --good-color: #CDDC39;
@@ -15,17 +16,24 @@
     --bad-color: #FF9800;
     --garbage-color: #f44336;
 
-    /* NEW: Media Type Colors for Homepage Cards */
-    --movie-color: #0d47a1;  /* Dark Blue */
-    --tv-color: #1b5e20;     /* Dark Green */
-    --album-color: #4a148c;   /* Dark Purple */
-    --single-color: #b71c1c;  /* Dark Red */
+    /* --- NEW: REVISED MEDIA TYPE COLORS --- */
+    --movie-accent: #007BFF;  /* Blue */
+    --tv-accent: #28a745;     /* Green */
+    --album-accent: #dc3545;   /* Red */
+    --single-accent: #ffc107;  /* Yellow */
+
+    /* RGB versions for use in rgba() gradients */
+    --movie-rgb: 0, 123, 255;
+    --tv-rgb: 40, 167, 69;
+    --album-rgb: 220, 53, 69;
+    --single-rgb: 255, 193, 7;
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    /* NEW: Modern font */
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 20px;
 }
@@ -39,8 +47,7 @@ body {
 .banner {
     height: 350px;
     background-size: cover;
-    background-position: center;
-    border-radius: 8px;
+    border-radius: 12px; /* Softer corners */
     margin-bottom: 20px;
     background-color: var(--placeholder-color);
 }
@@ -56,7 +63,7 @@ body {
     width: 200px;
     height: 300px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 12px; /* Softer corners */
     background-color: var(--placeholder-color);
     display: flex;
     justify-content: center;
@@ -98,10 +105,11 @@ body {
     padding: 10px 25px;
     font-size: 2.5rem;
     font-weight: bold;
-    border-radius: 8px;
-    color: black;
+    border-radius: 10px;
+    color: #111;
     min-width: 60px;
     text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Adds pop to the number */
 }
 
 /* --- Rating Grid --- */
@@ -114,12 +122,12 @@ body {
 .rating-item {
     width: 60px;
     height: 40px;
-    border-radius: 5px;
+    border-radius: 6px; /* Softer corners */
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: bold;
-    color: black;
+    color: #111;
     cursor: pointer;
     position: relative;
 }
@@ -161,84 +169,70 @@ nav {
     align-items: center;
     background-color: var(--card-color);
     padding: 10px 20px;
-    border-radius: 8px;
+    border-radius: 12px; /* Softer corners */
     margin-bottom: 20px;
+    border: 1px solid var(--border-color);
 }
-nav a { color: var(--text-color); text-decoration: none; padding: 8px 12px; }
-nav a:hover { background-color: var(--border-color); border-radius: 5px; }
+nav a { color: var(--text-color); text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; }
+nav a:hover { background-color: #333; }
 
 form {
     background-color: var(--card-color);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px; /* Softer corners */
+    border: 1px solid var(--border-color);
 }
 
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; }
 .form-group input, .form-group select {
     width: 100%;
-    padding: 8px;
+    padding: 10px; /* More padding */
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    border-radius: 4px;
+    border-radius: 8px; /* Softer corners */
+    transition: all 0.2s ease-in-out;
+}
+
+/* NEW: Focus state for better usability */
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--movie-accent);
+    box-shadow: 0 0 0 3px rgba(var(--movie-rgb), 0.3);
 }
 
 button, .btn {
     padding: 10px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Softer corners */
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
+    font-weight: bold;
+    transition: filter 0.2s;
 }
-.btn-primary { background-color: var(--awesome-color); color: black; }
+button:hover, .btn:hover {
+    filter: brightness(1.15); /* More satisfying hover */
+}
+.btn-primary { background-color: var(--awesome-color); color: #111; }
 .btn-danger { background-color: var(--garbage-color); color: white; }
 
-.flash-message {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    border: 1px solid transparent;
-}
+.flash-message { padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid transparent; }
 .flash-message.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
 .flash-message.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
 .filter-form {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 10px; /* Reduced margin */
-    background-color: var(--card-color);
-    padding: 15px;
-    border-radius: 8px;
-    align-items: flex-end;
+    display: flex; gap: 20px; margin-bottom: 10px; background-color: var(--card-color);
+    padding: 15px; border-radius: 12px; align-items: flex-end; border: 1px solid var(--border-color);
 }
-.filter-form .form-group {
-    margin-bottom: 0;
-}
-.filter-form select {
-    width: 200px;
-}
+.filter-form .form-group { margin-bottom: 0; }
+.filter-form select { width: 200px; }
 
 /* --- NEW: Legend Styles --- */
-.legend {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
-    padding-left: 5px;
-}
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-}
-.legend-color-box {
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
-    display: inline-block;
-}
+.legend { display: flex; gap: 20px; margin-bottom: 30px; padding-left: 5px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+.legend-color-box { width: 15px; height: 15px; border-radius: 50%; display: inline-block; } /* Circles */
 
 /* --- Homepage Media Grid --- */
 .media-grid {
@@ -249,77 +243,63 @@ button, .btn {
 
 .media-card {
     background-color: var(--card-color);
-    border-radius: 8px;
+    border-radius: 12px; /* Softer corners */
     text-decoration: none;
     color: var(--text-color);
     overflow: hidden;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid var(--border-color);
+    /* NEW: Subtle shadow for depth */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .media-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    transform: scale(1.04);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    /* NEW: Border color glows on hover */
 }
+.media-card:hover.movie-border { border-color: var(--movie-accent); }
+.media-card:hover.tv-border { border-color: var(--tv-accent); }
+.media-card:hover.album-border { border-color: var(--album-accent); }
+.media-card:hover.single-border { border-color: var(--single-accent); }
+
 
 .media-card-poster img,
 .media-card-poster .placeholder {
-    width: 100%;
-    display: block;
-    background-color: var(--placeholder-color);
-    aspect-ratio: 2 / 3; 
-    object-fit: cover;
+    width: 100%; display: block; background-color: var(--placeholder-color);
+    aspect-ratio: 2 / 3; object-fit: cover;
 }
-
 .media-card-poster .placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 4rem;
-    color: #222;
+    display: flex; justify-content: center; align-items: center; font-size: 4rem; color: #222;
 }
-
 .media-card-square .media-card-poster img,
-.media-card-square .media-card-poster .placeholder {
-    aspect-ratio: 1 / 1;
-}
+.media-card-square .media-card-poster .placeholder { aspect-ratio: 1 / 1; }
 
 .media-card-info {
     padding: 10px;
-    /* NEW: Default color, will be overridden */
-    background-color: var(--border-color); 
-    transition: background-color 0.2s;
+    background-color: var(--card-color); /* Base color */
+    position: relative;
+    z-index: 1;
 }
 
-/* NEW: Media Type Color Classes */
-.movie-type { background-color: var(--movie-color); }
-.tv-type { background-color: var(--tv-color); }
-.album-type { background-color: var(--album-color); }
-.single-type { background-color: var(--single-color); }
-
-
-.media-card-info h3 {
-    font-size: 1rem;
-    margin: 0 0 5px 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+/* NEW: GRADIENT ACCENT for the card info section */
+.media-card-info::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: -1;
+    opacity: 0.25; /* Control intensity of gradient */
+    background: transparent;
 }
+.movie-type::before { background: linear-gradient(to top, transparent 0%, var(--movie-accent) 250%); }
+.tv-type::before { background: linear-gradient(to top, transparent 0%, var(--tv-accent) 250%); }
+.album-type::before { background: linear-gradient(to top, transparent 0%, var(--album-accent) 250%); }
+.single-type::before { background: linear-gradient(to top, transparent 0%, var(--single-accent) 250%); }
 
-.media-card-info .creator {
-    font-size: 0.8rem;
-    color: #ccc;
-    margin: 0 0 5px 0;
-}
-
-.media-card-info .score {
-    font-size: 0.9rem;
-    font-weight: bold;
-    margin: 0;
-}
+.media-card-info h3 { font-size: 1rem; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.media-card-info .creator { font-size: 0.8rem; color: #aaa; margin: 0 0 5px 0; }
+.media-card-info .score { font-size: 0.9rem; font-weight: bold; margin: 0; }
 
 .poster-square,
 .poster-square img, 
-.poster-square .placeholder {
-    width: 300px;
-    height: 300px;
-}
+.poster-square .placeholder { width: 300px; height: 300px; }
