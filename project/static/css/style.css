@@ -34,30 +34,35 @@ body {
 }
 
 .container { max-width: 1200px; margin: 0 auto; }
-
-/* --- THIS IS THE CORRECTED RULE --- */
-.banner { 
-    height: 350px; 
-    background-size: cover; 
-    border-radius: 12px; 
-    margin-bottom: 20px; 
-    background-color: var(--placeholder-color); /* Fixed the missing parenthesis here */
-}
+.banner { height: 350px; background-size: cover; border-radius: 12px; margin-bottom: 20px; background-color: var(--placeholder-color); }
 
 /* --- Media Detail Page Enhancements --- */
-.header-card {
-    background-color: var(--card-color);
-    padding: 24px;
+.header-card { background-color: var(--card-color); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: -80px; position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.header-section { display: flex; gap: 30px; margin-bottom: 0; }
+
+/* --- FIXED: Poster aspect ratio rules --- */
+.poster {
+    width: 200px; /* Default width for Movie/TV posters */
+}
+.poster img, .poster .placeholder {
+    width: 100%; /* Image should fill its container */
+    height: auto; /* Allow height to be determined by aspect ratio */
+    aspect-ratio: 2 / 3; /* Default vertical rectangle shape */
+    object-fit: cover;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
-    margin-top: -80px; /* Pull the card up over the banner */
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background-color: var(--placeholder-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+}
+.poster-square {
+    width: 300px; /* Larger width for Album/Single posters */
+}
+.poster-square img, .poster-square .placeholder {
+    aspect-ratio: 1 / 1; /* Enforce square shape */
 }
 
-.header-section { display: flex; gap: 30px; margin-bottom: 0; }
-.poster img, .poster .placeholder { width: 200px; height: 300px; object-fit: cover; border-radius: 12px; background-color: var(--placeholder-color); display: flex; justify-content: center; align-items: center; font-size: 5rem; }
 
 .movie-accent-text { color: var(--movie-accent); }
 .tv-accent-text { color: var(--tv-accent); }
@@ -139,11 +144,13 @@ button:hover, .btn:hover { filter: brightness(1.15); }
 .media-card-square .media-card-poster img, .media-card-square .media-card-poster .placeholder { aspect-ratio: 1 / 1; }
 
 .media-card-info { padding: 10px; }
+
+/* --- FIXED: Corrected the broken copy-paste error for album-type --- */
 .media-card-info.movie-type { background: linear-gradient(180deg, rgba(var(--movie-rgb), 0.35) 0%, var(--card-color) 100%); }
 .media-card-info.tv-type { background: linear-gradient(180deg, rgba(var(--tv-rgb), 0.35) 0%, var(--card-color) 100%); }
-.media-card-info.album-type { background:.media-card-info.single-type { background: linear-gradient(180deg, rgba(var(--single-rgb), 0.25) 0%, var(--card-color) 100%); }
+.media-card-info.album-type { background: linear-gradient(180deg, rgba(var(--album-rgb), 0.35) 0%, var(--card-color) 100%); }
+.media-card-info.single-type { background: linear-gradient(180deg, rgba(var(--single-rgb), 0.25) 0%, var(--card-color) 100%); }
+
 .media-card-info h3 { font-size: 1rem; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-card-info .creator { font-size: 0.8rem; color: #aaa; margin: 0 0 5px 0; }
 .media-card-info .score { font-size: 0.9rem; font-weight: bold; margin: 0; }
-
-.poster-square, .poster-square img, .poster-square .placeholder { width: 300px; height: 300px; }
