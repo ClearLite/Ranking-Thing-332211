@@ -74,10 +74,30 @@ body {
     margin-bottom: 15px;
 }
 
-.title-info .overall-score {
-    font-size: 2rem;
-    font-weight: bold;
+/* --- NEW/UPDATED SCORE DISPLAY STYLES --- */
+.score-display-container {
+    margin-top: 15px;
+    margin-bottom: 10px;
 }
+
+.score-label {
+    font-size: 1rem;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+.overall-score-box {
+    display: inline-block;
+    padding: 10px 25px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    border-radius: 8px;
+    color: black;
+    min-width: 60px; /* Ensures the box has some width even if score is a single digit */
+    text-align: center;
+}
+/* Note: The old '.overall-score' class is no longer used for styling */
+
 
 /* --- Rating Grid --- */
 .ratings-grid {
@@ -114,13 +134,13 @@ body {
     font-size: 0.8rem;
 }
 
-/* Rating Colors */
-.rating-item.awesome { background-color: var(--awesome-color); }
-.rating-item.great { background-color: var(--great-color); }
-.rating-item.good { background-color: var(--good-color); }
-.rating-item.okay { background-color: var(--okay-color); }
-.rating-item.bad { background-color: var(--bad-color); }
-.rating-item.garbage { background-color: var(--garbage-color); }
+/* Rating Colors (Used by score box and rating grid) */
+.awesome { background-color: var(--awesome-color); }
+.great { background-color: var(--great-color); }
+.good { background-color: var(--good-color); }
+.okay { background-color: var(--okay-color); }
+.bad { background-color: var(--bad-color); }
+.garbage { background-color: var(--garbage-color); }
 
 .season-header, .album-header {
     margin-top: 30px;
@@ -130,28 +150,9 @@ body {
     padding-bottom: 5px;
 }
 
-/* Movie/Single Display */
-.single-rating-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--card-color);
-    padding: 40px;
-    border-radius: 8px;
-}
-.single-rating-display .label {
-    font-size: 1.2rem;
-    color: #aaa;
-    margin-bottom: 10px;
-}
-.single-rating-display .score-box {
-    padding: 20px 40px;
-    font-size: 4rem;
-    font-weight: bold;
-    border-radius: 10px;
-    color: black;
-}
+/* --- REMOVED STYLES FOR OLD MOVIE/SINGLE DISPLAY --- */
+/* The .single-rating-display and .score-box classes are no longer in the HTML */
+
 
 /* --- Navigation & Forms --- */
 nav {
