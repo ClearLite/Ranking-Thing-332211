@@ -34,7 +34,15 @@ body {
 }
 
 .container { max-width: 1200px; margin: 0 auto; }
-.banner { height: 350px; background-size: cover; border-radius: 12px; margin-bottom: 20px; background-color: var(--placeholder-color; }
+
+/* --- THIS IS THE CORRECTED RULE --- */
+.banner { 
+    height: 350px; 
+    background-size: cover; 
+    border-radius: 12px; 
+    margin-bottom: 20px; 
+    background-color: var(--placeholder-color); /* Fixed the missing parenthesis here */
+}
 
 /* --- Media Detail Page Enhancements --- */
 .header-card {
@@ -51,7 +59,6 @@ body {
 .header-section { display: flex; gap: 30px; margin-bottom: 0; }
 .poster img, .poster .placeholder { width: 200px; height: 300px; object-fit: cover; border-radius: 12px; background-color: var(--placeholder-color); display: flex; justify-content: center; align-items: center; font-size: 5rem; }
 
-/* NEW: Accent color classes for text */
 .movie-accent-text { color: var(--movie-accent); }
 .tv-accent-text { color: var(--tv-accent); }
 .album-accent-text { color: var(--album-accent); }
@@ -66,15 +73,12 @@ body {
 .overall-score-box { display: inline-block; padding: 10px 25px; font-size: 2.5rem; font-weight: bold; border-radius: 10px; color: #111; min-width: 60px; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 .calculated-avg { margin-top: 10px; color: #aaa; font-size: 1rem; }
 
-/* NEW: Gradient Section Divider */
 .section-divider { height: 2px; border: none; margin: 30px 0; }
 .section-divider.movie-divider { background: linear-gradient(90deg, transparent, var(--movie-accent), transparent); }
 .section-divider.tv_show-divider { background: linear-gradient(90deg, transparent, var(--tv-accent), transparent); }
 .section-divider.album-divider { background: linear-gradient(90deg, transparent, var(--album-accent), transparent); }
 .section-divider.single-divider { background: linear-gradient(90deg, transparent, var(--single-accent), transparent); }
 
-
-/* --- Rating Grid Enhancements --- */
 .ratings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
 .rating-item { width: 60px; height: 40px; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #111; cursor: pointer; position: relative; transition: transform 0.2s ease-in-out; }
 .rating-item:hover { transform: scale(1.1); }
@@ -87,7 +91,6 @@ body {
 .season-header h2 { margin: 0; font-size: 1.5rem; }
 .season-avg { font-size: 1rem; color: #aaa; font-weight: normal; }
 
-/* --- Login Page Styles --- */
 .login-container { display: flex; align-items: center; justify-content: center; min-height: 70vh; }
 .login-card { background-color: var(--card-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px; max-width: 400px; width: 100%; text-align: center; }
 .login-icon { color: #666; width: 48px; height: 48px; margin: 0 auto 16px auto; }
@@ -95,8 +98,6 @@ body {
 .login-form { text-align: left; }
 .login-form .form-group { margin-bottom: 20px; }
 
-
-/* --- General Styles --- */
 nav { display: flex; justify-content: space-between; align-items: center; background-color: var(--card-color); padding: 10px 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); }
 nav a { color: var(--text-color); text-decoration: none; padding: 8px 12px; border-radius: 8px; transition: background-color 0.2s; }
 nav a:hover { background-color: #333; }
@@ -111,7 +112,6 @@ form { background-color: var(--card-color); padding: 20px; border-radius: 12px; 
 button, .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; transition: filter 0.2s; }
 button:hover, .btn:hover { filter: brightness(1.15); }
 
-/* UPDATED: Primary button now uses the main blue accent color */
 .btn-primary { background-color: var(--movie-accent); color: white; }
 .btn-danger { background-color: var(--garbage-color); color: white; }
 .btn-full { width: 100%; padding-top: 12px; padding-bottom: 12px; font-size: 1.1rem; }
@@ -141,8 +141,7 @@ button:hover, .btn:hover { filter: brightness(1.15); }
 .media-card-info { padding: 10px; }
 .media-card-info.movie-type { background: linear-gradient(180deg, rgba(var(--movie-rgb), 0.35) 0%, var(--card-color) 100%); }
 .media-card-info.tv-type { background: linear-gradient(180deg, rgba(var(--tv-rgb), 0.35) 0%, var(--card-color) 100%); }
-.media-card-info.album-type { background: linear-gradient(180deg, rgba(var(--album-rgb), 0.35) 0%, var(--card-color) 100%); }
-.media-card-info.single-type { background: linear-gradient(180deg, rgba(var(--single-rgb), 0.25) 0%, var(--card-color) 100%); }
+.media-card-info.album-type { background:.media-card-info.single-type { background: linear-gradient(180deg, rgba(var(--single-rgb), 0.25) 0%, var(--card-color) 100%); }
 .media-card-info h3 { font-size: 1rem; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-card-info .creator { font-size: 0.8rem; color: #aaa; margin: 0 0 5px 0; }
 .media-card-info .score { font-size: 0.9rem; font-weight: bold; margin: 0; }
