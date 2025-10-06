@@ -22,8 +22,30 @@ def get_rating_class(rating):
 
 @main.route('/')
 def index():
-    all_media = Media.query.order_by(Media.title).all()
-    return render_template('index.html', all_media=all_media)
+    # --- START: NEW FILTERING AND SORTING LOGIC ---
+    sort_by = request.args.get('sort', 'title_asc') # Default sort
+    filter_type = request.args.get('filter', 'all')   # Default filter
+
+    query = Media.query
+
+    # Apply filter
+    if filter_type != 'all':
+        query = query.filter(Media.media_type == filter_type)
+
+    all_media_list = query.all()
+
+    # Apply sorting in Python since overall_score is a property
+    if sort_by == 'score_desc':
+        all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
+    elif sort_by == 'score_asc':
+        all_media_list.sort(key=lambda m: m.overall_score)
+    else: # Default: title_asc
+        all_media_list.sort(key=lambda m: m.title.lower())
+    
+    return render_template('index.html', 
+                           all_media=all_media_list, 
+                           current_sort=sort_by, 
+                           current_filter=filter_type)
 
 @main.route('/media/<int:media_id>')
 def media_page(media_id):
