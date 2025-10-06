@@ -6,7 +6,7 @@
     <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
     <div class="header-section">
-        <div class="poster">
+        <div class="poster {% if media.media_type in ['album', 'single'] %}poster-square{% endif %}">
             {% if media.poster_img %}
                 <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
             {% else %}
