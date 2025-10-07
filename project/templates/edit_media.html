@@ -14,12 +14,7 @@
             {{ form.title.label }} {{ form.title() }}
         </div>
         
-        <div class="form-group">
-            <label>Title Word Styling</label>
-            <div id="title-styler-container" class="title-styler">
-            </div>
-            <div id="title_styling_inputs_container"></div>
-        </div>
+        <!-- REMOVED: Title Styling Customization Section is gone. -->
         
         <div class="form-group">
             {{ form.creator.label }} {{ form.creator() }}
@@ -97,75 +92,48 @@
             }
             mediaTypeSelect.addEventListener('change', toggleFields);
             toggleFields();
-
-            const titleInput = document.getElementById('title');
-            const stylerContainer = document.getElementById('title-styler-container');
-            const hiddenInputsContainer = document.getElementById('title_styling_inputs_container');
-
-            // --- THIS IS THE CORRECTED LINE ---
-            // Changed from 'to_dict' to 'to_dict()'
-            let existingStyling = {{ media.title_styles|map(attribute='to_dict()')|list|tojson if media and media.title_styles else '[]' }};
-
-            function updateTitleStyler() {
-                const titleText = titleInput.value;
-                const tokens = titleText.split(/\s+/).filter(t => t.length > 0);
-                
-                stylerContainer.innerHTML = ''; 
-                hiddenInputsContainer.innerHTML = '';
-
-                tokens.forEach((token, index) => {
-                    // Match by index first for stability when words are repeated
-                    const existingTokenStyle = existingStyling.find(s => s.token_index === index);
-                    const color1 = existingTokenStyle ? existingTokenStyle.color1 : '#000000';
-                    const color2 = existingTokenStyle ? (existingTokenStyle.color2 || '#000000') : '#000000';
-
-                    const stylerRow = document.createElement('div');
-                    stylerRow.className = 'styler-row';
-                    stylerRow.innerHTML = `
-                        <span class="styler-token">${token}</span>
-                        <div class="styler-inputs">
-                            <label>Color 1: <input type="color" data-index="${index}" class="color-1" value="${color1}"></label>
-                            <label>Color 2 (Gradient): <input type="color" data-index="${index}" class="color-2" value="${color2}"></label>
-                            <button type="button" class="btn-reset">Reset</button>
-                        </div>
-                    `;
-                    stylerContainer.appendChild(stylerRow);
-
-                    hiddenInputsContainer.innerHTML += `
-                        <input type="hidden" name="token_${index}" value="${token}">
-                        <input type="hidden" name="color1_${index}" id="form_color1_${index}" value="${color1}">
-                        <input type="hidden" name="color2_${index}" id="form_color2_${index}" value="${color2}">
-                    `;
-                });
-
-                stylerContainer.querySelectorAll('input[type="color"]').forEach(picker => {
-                    picker.addEventListener('input', function() {
-                        const index = this.dataset.index;
-                        const targetId = this.classList.contains('color-1') ? `form_color1_${index}` : `form_color2_${index}`;
-                        document.getElementById(targetId).value = this.value;
-                    });
-                });
-
-                stylerContainer.querySelectorAll('.btn-reset').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const inputs = this.parentElement.querySelectorAll('input[type="color"]');
-                        inputs[0].value = '#000000';
-                        inputs[1].value = '#000000';
-                        inputs[0].dispatchEvent(new Event('input'));
-                        inputs[1].dispatchEvent(new Event('input'));
-                    });
-                });
-            }
-            
-            titleInput.addEventListener('keyup', updateTitleStyler);
-            updateTitleStyler();
         });
 
-        // --- Other dynamic add/remove logic ---
         let seasonCount = {{ media.seasons|length if media and media.media_type == 'tv_show' else 0 }};
-        function addSeason() {}
-        function addEpisode(seasonBlock) {}
+        function addSeason() {
+            seasonCount++;
+            const container = document.getElementById('seasons-container');
+            const newSeason = document.createElement('div');
+            newSeason.className = 'season-block';
+            newSeason.style = "background: #333; padding: 10px; margin-bottom: 10px; border-radius: 5px;";
+            newSeason.innerHTML = `
+                Season #: <input type="number" name="season_number_${seasonCount}" value="${seasonCount}">
+                <div class="episodes-container"></div>
+                <button type="button" onclick="addEpisode(this.parentElement)">+ Add Episode</button>`;
+            container.appendChild(newSeason);
+        }
+
+        function addEpisode(seasonBlock) {
+            const container = seasonBlock.querySelector('.episodes-container');
+            const seasonIndex = Array.from(document.getElementById('seasons-container').children).indexOf(seasonBlock) + 1;
+            const episodeCount = container.children.length + 1;
+            const newEpisode = document.createElement('div');
+            newEpisode.className = 'episode-row';
+            newEpisode.style = "display: flex; gap: 5px; margin-top: 5px;";
+            newEpisode.innerHTML = `
+                E#: <input type="number" name="ep_number_${seasonIndex}_${episodeCount}" value="${episodeCount}" style="width: 60px;">
+                Title: <input type="text" name="ep_title_${seasonIndex}_${episodeCount}">
+                Rating: <input type="text" name="ep_rating_${seasonIndex}_${episodeCount}" style="width: 60px;">`;
+            container.appendChild(newEpisode);
+        }
+        
         let trackCount = {{ media.tracks|length if media and media.media_type == 'album' else 0 }};
-        function addTrack() {}
+        function addTrack() {
+            trackCount++;
+            const container = document.getElementById('tracks-container');
+            const newTrack = document.createElement('div');
+            newTrack.className = 'track-row';
+            newTrack.style = "display: flex; gap: 5px; margin-top: 5px;";
+            newTrack.innerHTML = `
+                T#: <input type="number" name="track_number_${trackCount}" value="${trackCount}" style="width: 60px;">
+                Title: <input type="text" name="track_title_${trackCount}">
+                Rating: <input type="text" name="track_rating_${trackCount}" style="width: 60px;">`;
+            container.appendChild(newTrack);
+        }
     </script>
 {% endblock %}
