@@ -14,13 +14,10 @@
             {{ form.title.label }} {{ form.title() }}
         </div>
         
-        <!-- NEW: Title Styling Customization Section -->
         <div class="form-group">
             <label>Title Word Styling</label>
             <div id="title-styler-container" class="title-styler">
-                <!-- JavaScript will populate this editor UI -->
             </div>
-            <!-- This container will hold our dynamically generated hidden inputs -->
             <div id="title_styling_inputs_container"></div>
         </div>
         
@@ -89,7 +86,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Field Toggling Logic ---
             const mediaTypeSelect = document.getElementById('media_type');
             const tvShowFields = document.getElementById('tv-show-fields');
             const albumFields = document.getElementById('album-fields');
@@ -102,13 +98,13 @@
             mediaTypeSelect.addEventListener('change', toggleFields);
             toggleFields();
 
-            // --- TITLE STYLING SCRIPT ---
             const titleInput = document.getElementById('title');
             const stylerContainer = document.getElementById('title-styler-container');
             const hiddenInputsContainer = document.getElementById('title_styling_inputs_container');
 
-            // Safely load existing styling data from the model's to_dict helper
-            let existingStyling = {{ media.title_styles|map(attribute='to_dict')|list|tojson if media and media.title_styles else '[]' }};
+            // --- THIS IS THE CORRECTED LINE ---
+            // Changed from 'to_dict' to 'to_dict()'
+            let existingStyling = {{ media.title_styles|map(attribute='to_dict()')|list|tojson if media and media.title_styles else '[]' }};
 
             function updateTitleStyler() {
                 const titleText = titleInput.value;
@@ -118,7 +114,8 @@
                 hiddenInputsContainer.innerHTML = '';
 
                 tokens.forEach((token, index) => {
-                    const existingTokenStyle = existingStyling.find(s => s.token === token && s.token_index === index);
+                    // Match by index first for stability when words are repeated
+                    const existingTokenStyle = existingStyling.find(s => s.token_index === index);
                     const color1 = existingTokenStyle ? existingTokenStyle.color1 : '#000000';
                     const color2 = existingTokenStyle ? (existingTokenStyle.color2 || '#000000') : '#000000';
 
@@ -147,7 +144,7 @@
                         const targetId = this.classList.contains('color-1') ? `form_color1_${index}` : `form_color2_${index}`;
                         document.getElementById(targetId).value = this.value;
                     });
-});
+                });
 
                 stylerContainer.querySelectorAll('.btn-reset').forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -165,9 +162,10 @@
         });
 
         // --- Other dynamic add/remove logic ---
-        // (This code is simplified for brevity but should be the original functions)
-        let seasonCount = 0; function addSeason() {}
+        let seasonCount = {{ media.seasons|length if media and media.media_type == 'tv_show' else 0 }};
+        function addSeason() {}
         function addEpisode(seasonBlock) {}
-        let trackCount = 0; function addTrack() {}
+        let trackCount = {{ media.tracks|length if media and media.media_type == 'album' else 0 }};
+        function addTrack() {}
     </script>
 {% endblock %}
