@@ -3,11 +3,7 @@
 {% block title %}{{ media.title }}{% endblock %}
 
 {% block content %}
-    {% set accent_class = 
-        'movie-accent-text' if media.media_type == 'movie' else
-        'tv-accent-text' if media.media_type == 'tv_show' else
-        'album-accent-text' if media.media_type == 'album' else
-        'single-accent-text' %}
+    {# REMOVED: The accent_class variable definition is no longer needed. #}
 
     <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
@@ -22,8 +18,8 @@
             </div>
             <div class="title-info">
                 
-                <!-- REVERTED: Title rendering is now simple again -->
-                <h1 class="{{ accent_class }}">{{ media.title }}</h1>
+                <!-- UPDATED: The h1 tag no longer has a dynamic color class -->
+                <h1>{{ media.title }}</h1>
 
                 {% if media.creator %}
                     <p class="creator">{{ media.creator }}</p>
