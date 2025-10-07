@@ -11,7 +11,8 @@
 
     <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
-    <div class="header-card">
+    <!-- UPDATED: Added a dynamic class here for the colored top border -->
+    <div class="header-card {{ media.media_type }}-border">
         <div class="header-section">
             <div class="poster {% if media.media_type in ['album', 'single'] %}poster-square{% endif %}">
                 {% if media.poster_img %}
@@ -22,21 +23,17 @@
             </div>
             <div class="title-info">
                 
-                <!-- Logic for rendering custom or default title -->
                 <h1 class="custom-title-container">
                     {% if media.title_styles %}
                         {% for part in media.title_styles %}
                             {% if part.color2 %}
-                                {# Render as a gradient #}
                                 <span class="gradient-text" style="background-image: linear-gradient(90deg, {{ part.color1 }}, {{ part.color2 }});">{{ part.token }}</span>
                             {% else %}
-                                {# Render as a solid color #}
                                 <span style="color: {{ part.color1 if part.color1 != '#000000' else 'inherit' }};">{{ part.token }}</span>
                             {% endif %}
-                            {{ ' ' }} {# Add a space between words #}
+                            {{ ' ' }}
                         {% endfor %}
                     {% else %}
-                        {# Fallback to default title styling #}
                         <span class="{{ accent_class }}">{{ media.title }}</span>
                     {% endif %}
                 </h1>
@@ -71,9 +68,7 @@
         </div>
     </div>
     
-    {% if media.media_type in ['tv_show', 'album'] and (media.seasons or media.tracks) %}
-        <div class="section-divider {{ media.media_type }}-divider"></div>
-    {% endif %}
+    <!-- REMOVED: The old section-divider logic has been deleted from here -->
     
     {% if media.media_type == 'tv_show' %}
         {% for season in media.seasons | sort(attribute='season_number') %}
