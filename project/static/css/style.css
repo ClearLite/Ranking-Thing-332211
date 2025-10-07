@@ -62,10 +62,7 @@ body {
 .poster-square { width: 300px; }
 .poster-square img, .poster-square .placeholder { aspect-ratio: 1 / 1; }
 
-.movie-accent-text { color: var(--movie-accent); }
-.tv-accent-text { color: var(--tv-accent); }
-.album-accent-text { color: var(--album-accent); }
-.single-accent-text { color: var(--single-accent); }
+/* REMOVED: The accent-text classes are no longer needed */
 
 .title-info h1 { margin: 0 0 5px 0; font-size: 2.5rem; }
 .title-info .creator { font-size: 1.2rem; color: #ccc; margin-top: 0; margin-bottom: 10px; font-weight: bold; }
