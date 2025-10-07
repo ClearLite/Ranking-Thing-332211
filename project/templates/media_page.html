@@ -11,7 +11,6 @@
 
     <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
-    <!-- UPDATED: Added a dynamic class here for the colored top border -->
     <div class="header-card {{ media.media_type }}-border">
         <div class="header-section">
             <div class="poster {% if media.media_type in ['album', 'single'] %}poster-square{% endif %}">
@@ -23,20 +22,8 @@
             </div>
             <div class="title-info">
                 
-                <h1 class="custom-title-container">
-                    {% if media.title_styles %}
-                        {% for part in media.title_styles %}
-                            {% if part.color2 %}
-                                <span class="gradient-text" style="background-image: linear-gradient(90deg, {{ part.color1 }}, {{ part.color2 }});">{{ part.token }}</span>
-                            {% else %}
-                                <span style="color: {{ part.color1 if part.color1 != '#000000' else 'inherit' }};">{{ part.token }}</span>
-                            {% endif %}
-                            {{ ' ' }}
-                        {% endfor %}
-                    {% else %}
-                        <span class="{{ accent_class }}">{{ media.title }}</span>
-                    {% endif %}
-                </h1>
+                <!-- REVERTED: Title rendering is now simple again -->
+                <h1 class="{{ accent_class }}">{{ media.title }}</h1>
 
                 {% if media.creator %}
                     <p class="creator">{{ media.creator }}</p>
@@ -67,8 +54,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- REMOVED: The old section-divider logic has been deleted from here -->
     
     {% if media.media_type == 'tv_show' %}
         {% for season in media.seasons | sort(attribute='season_number') %}
