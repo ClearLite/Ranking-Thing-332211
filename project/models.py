@@ -5,32 +5,13 @@ from flask_login import UserMixin
 import statistics
 
 class User(UserMixin, db.Model):
-    # This model uses the default database
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-class TitleStyle(db.Model):
-    # This model will live in the 'colors' database
-    __bind_key__ = 'colors'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(100), nullable=False)
-    token_index = db.Column(db.Integer, nullable=False)
-    color1 = db.Column(db.String(7), nullable=False, default='#FFFFFF')
-    color2 = db.Column(db.String(7), nullable=True)
-    media_id = db.Column(db.Integer, nullable=False)
-
-    def to_dict(self):
-        return {
-            'token': self.token,
-            'token_index': self.token_index,
-            'color1': self.color1,
-            'color2': self.color2
-        }
+# REMOVED: The TitleStyle model is gone.
 
 class Media(db.Model):
-    # This model uses the default database
     id = db.Column(db.Integer, primary_key=True)
     media_type = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(200), nullable=False)
@@ -39,21 +20,17 @@ class Media(db.Model):
     poster_img = db.Column(db.String(200))
     banner_img = db.Column(db.String(200))
     
+    # REMOVED: The title_styles property/relationship is gone.
+    
     seasons = db.relationship('Season', backref='media', cascade="all, delete-orphan")
     tracks = db.relationship('Track', backref='media', cascade="all, delete-orphan")
     
     official_rating = db.Column(db.Float)
 
     @property
-    def title_styles(self):
-        return TitleStyle.query.filter_by(media_id=self.id).order_by(TitleStyle.token_index).all()
-
-    # --- RESTORED FUNCTION BODY ---
-    @property
     def overall_score(self):
         return self.official_rating if self.official_rating is not None else 0.0
 
-    # --- RESTORED FUNCTION BODY ---
     @property
     def calculated_average_score(self):
         ratings = []
