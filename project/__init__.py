@@ -18,10 +18,7 @@ def create_app():
     # Define the primary (default) database
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'media_rater.db')}"
     
-    # --- NEW: Define the second database for title styles ---
-    app.config['SQLALCHEMY_BINDS'] = {
-        'colors': f"sqlite:///{os.path.join(app.instance_path, 'title_styles.db')}"
-    }
+    # REMOVED: The second database configuration is gone
     
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -46,10 +43,8 @@ def create_app():
 
     # --- Create Databases and Admin User ---
     with app.app_context():
-        # Flask-SQLAlchemy is smart enough to create all tables in their respective databases
         db.create_all() 
         
-        # This logic only touches the default (media_rater.db) database
         if not models.User.query.filter_by(username='Ryan').first():
             hashed_password = generate_password_hash('06242005', method='pbkdf2:sha256')
             admin_user = models.User(username='Ryan', password=hashed_password)
