@@ -3,8 +3,6 @@
 {% block title %}{{ media.title }}{% endblock %}
 
 {% block content %}
-    {# REMOVED: The accent_class variable definition is no longer needed. #}
-
     <div class="banner" style="background-image: url('{{ url_for('static', filename='uploads/' + media.banner_img) if media.banner_img else '' }}');"></div>
     
     <div class="header-card {{ media.media_type }}-border">
@@ -18,8 +16,15 @@
             </div>
             <div class="title-info">
                 
-                <!-- UPDATED: The h1 tag no longer has a dynamic color class -->
                 <h1>{{ media.title }}</h1>
+                
+                {% if media.tags %}
+                <div class="tag-badge-container">
+                    {% for tag in media.tags %}
+                        <span class="tag-badge">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
 
                 {% if media.creator %}
                     <p class="creator">{{ media.creator }}</p>
