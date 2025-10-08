@@ -9,14 +9,14 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-# --- NEW: Many-to-many association table for tags, bound to the 'tags' database ---
+# --- THIS IS THE CORRECTED SECTION ---
 media_tags = db.Table('media_tags',
     db.Column('media_id', db.Integer, nullable=False),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), nullable=False),
+    # The ForeignKey constraint has been removed from this line
+    db.Column('tag_id', db.Integer, nullable=False),
     info={'bind_key': 'tags'}
 )
 
-# --- NEW: Tag model, bound to the 'tags' database ---
 class Tag(db.Model):
     __bind_key__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
@@ -37,17 +37,14 @@ class Media(db.Model):
     
     official_rating = db.Column(db.Float)
 
-    # --- NEW: Property that simulates a relationship to fetch tags from the 'tags' database ---
     @property
     def tags(self):
-        # Find all tag_ids associated with this media_id from the association table
         tag_ids_query = db.session.query(media_tags.c.tag_id).filter_by(media_id=self.id)
         tag_ids = [item[0] for item in tag_ids_query.all()]
         
         if not tag_ids:
             return []
         
-        # Fetch the actual Tag objects using the collected IDs
         return Tag.query.filter(Tag.id.in_(tag_ids)).all()
 
     @property
