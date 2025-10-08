@@ -13,12 +13,14 @@ def create_app():
 
     # --- Configuration ---
     app.config['SECRET_KEY'] = 'a_very_secret_key_change_this'
-    os.makedirs(app.instance_path, exist_ok=True)
+    os.makedirs(app.app_context().app.instance_path, exist_ok=True)
     
-    # Define the primary (default) database
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'media_rater.db')}"
     
-    # REMOVED: The second database configuration is gone
+    # --- NEW: Define the second database for tags ---
+    app.config['SQLALCHEMY_BINDS'] = {
+        'tags': f"sqlite:///{os.path.join(app.instance_path, 'tags.db')}"
+    }
     
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -30,7 +32,6 @@ def create_app():
     login_manager.login_view = 'main.login'
     login_manager.init_app(app)
 
-    # Import models here so they are registered with the db instance
     from . import models
 
     @login_manager.user_loader
@@ -41,10 +42,30 @@ def create_app():
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    # --- Create Databases and Admin User ---
+    # --- Create Databases and Initial Data ---
     with app.app_context():
-        db.create_all() 
+        db.create_all()
         
+        # --- NEW: Populate the tags database with default genres ---
+        def populate_tags():
+            cinematic_tags = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror', 'Marvel']
+            musical_tags = ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'R&B', 'EDM']
+
+            for tag_name in cinematic_tags:
+                if not models.Tag.query.filter_by(name=tag_name, category='cinematic').first():
+                    new_tag = models.Tag(name=tag_name, category='cinematic')
+                    db.session.add(new_tag)
+            
+            for tag_name in musical_tags:
+                if not models.Tag.query.filter_by(name=tag_name, category='musical').first():
+                    new_tag = models.Tag(name=tag_name, category='musical')
+                    db.session.add(new_tag)
+            
+            db.session.commit()
+        
+        populate_tags()
+        # --- END NEW ---
+
         if not models.User.query.filter_by(username='Ryan').first():
             hashed_password = generate_password_hash('06242005', method='pbkdf2:sha256')
             admin_user = models.User(username='Ryan', password=hashed_password)
