@@ -41,11 +41,27 @@ def index():
     
     all_media_list = query.all()
 
+    # Helper function to safely get a sortable year
+    def get_year_for_sort(media_item):
+        if not media_item.years:
+            return 0  # Items without a year go to the beginning/end
+        try:
+            # Take the first 4 characters (e.g., from '2015-2019') and convert to int
+            return int(media_item.years[:4])
+        except (ValueError, IndexError):
+            return 0 # Handle malformed year strings
+
     if sort_by == 'score_desc':
         all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
     elif sort_by == 'score_asc':
         all_media_list.sort(key=lambda m: m.overall_score)
-    else:
+    # --- NEW: Sorting logic for year ---
+    elif sort_by == 'year_desc':
+        all_media_list.sort(key=get_year_for_sort, reverse=True)
+    elif sort_by == 'year_asc':
+        all_media_list.sort(key=get_year_for_sort)
+    # --- END NEW ---
+    else: # Default: title_asc
         all_media_list.sort(key=lambda m: m.title.lower())
     
     all_tags = Tag.query.order_by(Tag.name).all()
