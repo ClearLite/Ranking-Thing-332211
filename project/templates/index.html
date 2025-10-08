@@ -31,6 +31,9 @@
                 <option value="title_asc" {% if current_sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
                 <option value="score_desc" {% if current_sort == 'score_desc' %}selected{% endif %}>Highest Rated</option>
                 <option value="score_asc" {% if current_sort == 'score_asc' %}selected{% endif %}>Lowest Rated</option>
+                <!-- NEW: Sorting options for year -->
+                <option value="year_desc" {% if current_sort == 'year_desc' %}selected{% endif %}>Year (Newest)</option>
+                <option value="year_asc" {% if current_sort == 'year_asc' %}selected{% endif %}>Year (Oldest)</option>
             </select>
         </div>
     </form>
@@ -72,7 +75,6 @@
                         <p class="creator">{{ media.creator }}</p>
                     {% endif %}
                     
-                    <!-- NEW: Display the year on the media card -->
                     {% if media.years %}
                         <p class="media-card-year">{{ media.years }}</p>
                     {% endif %}
