@@ -17,6 +17,15 @@
             </select>
         </div>
         <div class="form-group">
+            <label for="tag">Filter by Genre</label>
+            <select name="tag" id="tag" onchange="this.form.submit()">
+                <option value="all" {% if current_tag == 'all' %}selected{% endif %}>All Genres</option>
+                {% for tag in all_tags %}
+                    <option value="{{ tag.id }}" {% if current_tag == tag.id|string %}selected{% endif %}>{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
             <label for="sort">Sort By</label>
             <select name="sort" id="sort" onchange="this.form.submit()">
                 <option value="title_asc" {% if current_sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
@@ -26,9 +35,7 @@
         </div>
     </form>
 
-    <!-- Legend -->
     <div class="legend">
-        {# FIXED: Using unique classes for the legend colors now #}
         <span class="legend-item"><span class="legend-color-box legend-movie"></span> Movie</span>
         <span class="legend-item"><span class="legend-color-box legend-tv"></span> TV Show</span>
         <span class="legend-item"><span class="legend-color-box legend-album"></span> Album</span>
@@ -37,7 +44,6 @@
 
     <div class="media-grid">
         {% for media in all_media %}
-            {# UPDATED: Added a dynamic border class to the <a> tag for the hover effect #}
             <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
                class="media-card 
                     {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}
