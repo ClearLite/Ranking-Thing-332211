@@ -17,7 +17,6 @@ def create_app():
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'media_rater.db')}"
     
-    # --- NEW: Define the second database for tags ---
     app.config['SQLALCHEMY_BINDS'] = {
         'tags': f"sqlite:///{os.path.join(app.instance_path, 'tags.db')}"
     }
@@ -46,10 +45,18 @@ def create_app():
     with app.app_context():
         db.create_all()
         
-        # --- NEW: Populate the tags database with default genres ---
+        # --- UPDATED: Expanded lists of default genres ---
         def populate_tags():
-            cinematic_tags = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror', 'Marvel']
-            musical_tags = ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'R&B', 'EDM']
+            cinematic_tags = [
+                'Action', 'Adventure', 'Comedy', 'Drama', 'Romance', 'Horror',
+                'Thriller / Suspense', 'Science Fiction (Sci-Fi)', 'Fantasy',
+                'Crime / Mystery', 'Documentary', 'Animation', 'Anime', 'Marvel'
+            ]
+            
+            musical_tags = [
+                'Pop', 'Rock', 'Hip-Hop / Rap', 'R&B / Soul', 'Country', 'Jazz',
+                'Classical', 'EDM', 'Reggae', 'Metal', 'Folk', 'Blues'
+            ]
 
             for tag_name in cinematic_tags:
                 if not models.Tag.query.filter_by(name=tag_name, category='cinematic').first():
@@ -64,7 +71,7 @@ def create_app():
             db.session.commit()
         
         populate_tags()
-        # --- END NEW ---
+        # --- END UPDATE ---
 
         if not models.User.query.filter_by(username='Ryan').first():
             hashed_password = generate_password_hash('06242005', method='pbkdf2:sha256')
