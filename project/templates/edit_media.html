@@ -13,9 +13,6 @@
         <div class="form-group">
             {{ form.title.label }} {{ form.title() }}
         </div>
-        
-        <!-- REMOVED: Title Styling Customization Section is gone. -->
-        
         <div class="form-group">
             {{ form.creator.label }} {{ form.creator() }}
         </div>
@@ -33,6 +30,28 @@
         </div>
 
         <hr>
+        
+        <div class="form-group">
+            <label>Genres / Tags</label>
+            <div id="cinematic-tags" class="tag-group">
+                <h4>Cinematic</h4>
+                {% for tag in all_tags if tag.category == 'cinematic' %}
+                    <label class="tag-checkbox">
+                        <input type="checkbox" name="tags" value="{{ tag.id }}" {% if tag.id in media_tag_ids %}checked{% endif %}>
+                        {{ tag.name }}
+                    </label>
+                {% endfor %}
+            </div>
+            <div id="musical-tags" class="tag-group">
+                <h4>Musical</h4>
+                {% for tag in all_tags if tag.category == 'musical' %}
+                    <label class="tag-checkbox">
+                        <input type="checkbox" name="tags" value="{{ tag.id }}" {% if tag.id in media_tag_ids %}checked{% endif %}>
+                        {{ tag.name }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
 
         <div id="tv-show-fields">
             <h3>Seasons & Episodes</h3>
@@ -84,11 +103,17 @@
             const mediaTypeSelect = document.getElementById('media_type');
             const tvShowFields = document.getElementById('tv-show-fields');
             const albumFields = document.getElementById('album-fields');
+            const cinematicTags = document.getElementById('cinematic-tags');
+            const musicalTags = document.getElementById('musical-tags');
 
             function toggleFields() {
                 const selectedType = mediaTypeSelect.value;
                 tvShowFields.style.display = (selectedType === 'tv_show') ? 'block' : 'none';
                 albumFields.style.display = (selectedType === 'album') ? 'block' : 'none';
+                
+                const isCinematic = (selectedType === 'movie' || selectedType === 'tv_show');
+                cinematicTags.style.display = isCinematic ? 'block' : 'none';
+                musicalTags.style.display = !isCinematic ? 'block' : 'none';
             }
             mediaTypeSelect.addEventListener('change', toggleFields);
             toggleFields();
