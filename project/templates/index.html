@@ -71,6 +71,12 @@
                     {% if media.creator %}
                         <p class="creator">{{ media.creator }}</p>
                     {% endif %}
+                    
+                    <!-- NEW: Display the year on the media card -->
+                    {% if media.years %}
+                        <p class="media-card-year">{{ media.years }}</p>
+                    {% endif %}
+
                     <p class="score">⭐ {{ media.overall_score }}</p>
                 </div>
             </a>
