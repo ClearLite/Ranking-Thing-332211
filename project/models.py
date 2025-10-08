@@ -70,7 +70,6 @@ class Media(db.Model):
             return None
         return round(statistics.mean(ratings), 1) if ratings else 0.0
 
-# ... Season, Episode, and Track models remain unchanged ...
 class Season(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     season_number = db.Column(db.Integer, nullable=False)
