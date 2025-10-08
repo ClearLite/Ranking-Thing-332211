@@ -24,23 +24,20 @@ def get_rating_class(rating):
 def index():
     sort_by = request.args.get('sort', 'title_asc')
     filter_type = request.args.get('filter', 'all')
-    tag_filter = request.args.get('tag', 'all') # NEW tag filter
+    tag_filter = request.args.get('tag', 'all')
 
     query = Media.query
 
     if filter_type != 'all':
         query = query.filter(Media.media_type == filter_type)
 
-    # --- NEW: Filter by tag ---
     if tag_filter != 'all':
         try:
             tag_id = int(tag_filter)
-            # Find all media_ids from the association table that have this tag_id
             media_ids_with_tag = db.session.query(media_tags.c.media_id).filter_by(tag_id=tag_id)
-            # Filter the main query to only include those media items
             query = query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
         except (ValueError, TypeError):
-            pass # Ignore if tag is not a valid number
+            pass
     
     all_media_list = query.all()
 
@@ -51,7 +48,7 @@ def index():
     else:
         all_media_list.sort(key=lambda m: m.title.lower())
     
-    all_tags = Tag.query.order_by(Tag.name).all() # Get all tags for the dropdown
+    all_tags = Tag.query.order_by(Tag.name).all()
 
     return render_template('index.html', 
                            all_media=all_media_list, 
@@ -112,12 +109,9 @@ def edit_media(media_id):
         if form.banner_img.data:
             media.banner_img = save_file(form.banner_img.data)
 
-        # --- NEW: Process tag data ---
-        # 1. Clear existing tag associations for this media item
         delete_stmt = media_tags.delete().where(media_tags.c.media_id == media.id)
         db.session.execute(delete_stmt)
 
-        # 2. Get selected tags from the form and create new associations
         selected_tag_ids = request.form.getlist('tags', type=int)
         for tag_id in selected_tag_ids:
             insert_stmt = media_tags.insert().values(media_id=media.id, tag_id=tag_id)
@@ -130,8 +124,35 @@ def edit_media(media_id):
         
         db.session.commit()
         
-        # ... (rest of the route for seasons/tracks remains the same) ...
+        if media.media_type == 'tv_show':
+            Season.query.filter_by(media_id=media.id).delete()
+            for s_key, s_val in request.form.items():
+                if s_key.startswith('season_number_'):
+                    s_idx = s_key.split('_')[-1]
+                    new_season = Season(season_number=int(s_val), media_id=media.id)
+                    db.session.add(new_season)
+                    db.session.flush()
+                    for e_key, e_val in request.form.items():
+                        if e_key.startswith(f'ep_number_{s_idx}_'):
+                            e_idx = e_key.split('_')[-1]
+                            ep_title = request.form.get(f'ep_title_{s_idx}_{e_idx}', '')
+                            ep_rating_str = request.form.get(f'ep_rating_{s_idx}_{e_idx}', '')
+                            ep_rating = float(ep_rating_str) if ep_rating_str else None
+                            new_ep = Episode(episode_number=int(e_val), title=ep_title, rating=ep_rating, season_id=new_season.id)
+                            db.session.add(new_ep)
         
+        elif media.media_type == 'album':
+            Track.query.filter_by(media_id=media.id).delete()
+            for t_key, t_val in request.form.items():
+                if t_key.startswith('track_number_'):
+                    t_idx = t_key.split('_')[-1]
+                    track_title = request.form.get(f'track_title_{t_idx}', '')
+                    track_rating_str = request.form.get(f'track_rating_{t_idx}', '')
+                    track_rating = float(track_rating_str) if track_rating_str else None
+                    new_track = Track(track_number=int(t_val), title=track_title, rating=track_rating, media_id=media.id)
+                    db.session.add(new_track)
+
+        db.session.commit()
         flash('Media updated!', 'success')
         return redirect(url_for('main.media_page', media_id=media.id))
         
@@ -163,7 +184,6 @@ def add_media():
         flash('New media created. You can now add episodes/tracks and tags.', 'success')
         return redirect(url_for('main.edit_media', media_id=new_media.id))
     
-    # Also pass tags to the add_media page
     all_tags = Tag.query.order_by(Tag.name).all()
     return render_template('edit_media.html', form=form, media=None, all_tags=all_tags, media_tag_ids=[])
 
@@ -172,7 +192,6 @@ def add_media():
 def delete_media(media_id):
     media_to_delete = Media.query.get_or_404(media_id)
     
-    # Manually delete tag associations from the 'tags' database
     delete_stmt = media_tags.delete().where(media_tags.c.media_id == media_id)
     db.session.execute(delete_stmt)
     
