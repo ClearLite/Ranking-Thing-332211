@@ -41,27 +41,23 @@ def index():
     
     all_media_list = query.all()
 
-    # Helper function to safely get a sortable year
     def get_year_for_sort(media_item):
         if not media_item.years:
-            return 0  # Items without a year go to the beginning/end
+            return 0
         try:
-            # Take the first 4 characters (e.g., from '2015-2019') and convert to int
             return int(media_item.years[:4])
         except (ValueError, IndexError):
-            return 0 # Handle malformed year strings
+            return 0
 
     if sort_by == 'score_desc':
         all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
     elif sort_by == 'score_asc':
         all_media_list.sort(key=lambda m: m.overall_score)
-    # --- NEW: Sorting logic for year ---
     elif sort_by == 'year_desc':
         all_media_list.sort(key=get_year_for_sort, reverse=True)
     elif sort_by == 'year_asc':
         all_media_list.sort(key=get_year_for_sort)
-    # --- END NEW ---
-    else: # Default: title_asc
+    else:
         all_media_list.sort(key=lambda m: m.title.lower())
     
     all_tags = Tag.query.order_by(Tag.name).all()
@@ -145,9 +141,21 @@ def edit_media(media_id):
             for s_key, s_val in request.form.items():
                 if s_key.startswith('season_number_'):
                     s_idx = s_key.split('_')[-1]
-                    new_season = Season(season_number=int(s_val), media_id=media.id)
+                    
+                    # --- NEW: Get season-specific data from form ---
+                    season_rating_str = request.form.get(f'season_rating_{s_idx}', '')
+                    season_rating = float(season_rating_str) if season_rating_str else None
+                    season_year = request.form.get(f'season_year_{s_idx}', '')
+
+                    new_season = Season(
+                        season_number=int(s_val), 
+                        rating=season_rating, 
+                        year=season_year,
+                        media_id=media.id
+                    )
                     db.session.add(new_season)
                     db.session.flush()
+
                     for e_key, e_val in request.form.items():
                         if e_key.startswith(f'ep_number_{s_idx}_'):
                             e_idx = e_key.split('_')[-1]
