@@ -60,7 +60,15 @@
         {% for season in media.seasons | sort(attribute='season_number') %}
             <div class="season-header">
                 <h2>Season {{ season.season_number }}</h2>
-                <span class="season-avg">Avg: {{ season.average_score }}</span>
+                <div class="season-details">
+                    {% if season.year %}<span class="season-year">{{ season.year }}</span>{% endif %}
+                    {% if season.rating is not none %}
+                        <div class="season-score-box {{ get_rating_class(season.rating) }}">
+                            {{ season.rating }}
+                        </div>
+                    {% endif %}
+                    <span class="season-avg">(Ep. Avg: {{ season.average_score }})</span>
+                </div>
             </div>
             <div class="ratings-grid">
                 {% for episode in season.episodes %}
