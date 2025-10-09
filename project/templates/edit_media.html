@@ -58,11 +58,15 @@
             <div id="seasons-container">
                 {% if media and media.media_type == 'tv_show' %}
                     {% for season in media.seasons %}
-                    <div class="season-block" style="background: #333; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-                        Season #: <input type="number" name="season_number_{{ loop.index }}" value="{{ season.season_number }}">
+                    <div class="season-block">
+                        <div class="season-inputs">
+                            Season #: <input type="number" name="season_number_{{ loop.index }}" value="{{ season.season_number }}" style="width: 60px;">
+                            Year: <input type="text" name="season_year_{{ loop.index }}" value="{{ season.year or '' }}" style="width: 80px;" placeholder="YYYY">
+                            Rating: <input type="text" name="season_rating_{{ loop.index }}" value="{{ season.rating or '' }}" style="width: 60px;" placeholder="0-10">
+                        </div>
                         <div class="episodes-container">
                             {% for episode in season.episodes %}
-                            <div class="episode-row" style="display: flex; gap: 5px; margin-top: 5px;">
+                            <div class="episode-row">
                                 E#: <input type="number" name="ep_number_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.episode_number }}" style="width: 60px;">
                                 Title: <input type="text" name="ep_title_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.title }}">
                                 Rating: <input type="text" name="ep_rating_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.rating or '' }}" style="width: 60px;">
@@ -82,7 +86,7 @@
             <div id="tracks-container">
                  {% if media and media.media_type == 'album' %}
                     {% for track in media.tracks %}
-                    <div class="track-row" style="display: flex; gap: 5px; margin-top: 5px;">
+                    <div class="track-row">
                         T#: <input type="number" name="track_number_{{ loop.index }}" value="{{ track.track_number }}" style="width: 60px;">
                         Title: <input type="text" name="track_title_{{ loop.index }}" value="{{ track.title }}">
                         Rating: <input type="text" name="track_rating_{{ loop.index }}" value="{{ track.rating or '' }}" style="width: 60px;">
@@ -125,9 +129,12 @@
             const container = document.getElementById('seasons-container');
             const newSeason = document.createElement('div');
             newSeason.className = 'season-block';
-            newSeason.style = "background: #333; padding: 10px; margin-bottom: 10px; border-radius: 5px;";
             newSeason.innerHTML = `
-                Season #: <input type="number" name="season_number_${seasonCount}" value="${seasonCount}">
+                <div class="season-inputs">
+                    Season #: <input type="number" name="season_number_${seasonCount}" value="${seasonCount}" style="width: 60px;">
+                    Year: <input type="text" name="season_year_${seasonCount}" value="" style="width: 80px;" placeholder="YYYY">
+                    Rating: <input type="text" name="season_rating_${seasonCount}" value="" style="width: 60px;" placeholder="0-10">
+                </div>
                 <div class="episodes-container"></div>
                 <button type="button" onclick="addEpisode(this.parentElement)">+ Add Episode</button>`;
             container.appendChild(newSeason);
@@ -139,7 +146,6 @@
             const episodeCount = container.children.length + 1;
             const newEpisode = document.createElement('div');
             newEpisode.className = 'episode-row';
-            newEpisode.style = "display: flex; gap: 5px; margin-top: 5px;";
             newEpisode.innerHTML = `
                 E#: <input type="number" name="ep_number_${seasonIndex}_${episodeCount}" value="${episodeCount}" style="width: 60px;">
                 Title: <input type="text" name="ep_title_${seasonIndex}_${episodeCount}">
@@ -153,7 +159,6 @@
             const container = document.getElementById('tracks-container');
             const newTrack = document.createElement('div');
             newTrack.className = 'track-row';
-            newTrack.style = "display: flex; gap: 5px; margin-top: 5px;";
             newTrack.innerHTML = `
                 T#: <input type="number" name="track_number_${trackCount}" value="${trackCount}" style="width: 60px;">
                 Title: <input type="text" name="track_title_${trackCount}">
