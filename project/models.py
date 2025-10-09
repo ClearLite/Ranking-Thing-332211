@@ -9,10 +9,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-# --- THIS IS THE CORRECTED SECTION ---
 media_tags = db.Table('media_tags',
     db.Column('media_id', db.Integer, nullable=False),
-    # The ForeignKey constraint has been removed from this line
     db.Column('tag_id', db.Integer, nullable=False),
     info={'bind_key': 'tags'}
 )
@@ -21,7 +19,7 @@ class Tag(db.Model):
     __bind_key__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
-    category = db.Column(db.String(50), nullable=False) # 'cinematic' or 'musical'
+    category = db.Column(db.String(50), nullable=False)
 
 class Media(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,10 +39,8 @@ class Media(db.Model):
     def tags(self):
         tag_ids_query = db.session.query(media_tags.c.tag_id).filter_by(media_id=self.id)
         tag_ids = [item[0] for item in tag_ids_query.all()]
-        
         if not tag_ids:
             return []
-        
         return Tag.query.filter(Tag.id.in_(tag_ids)).all()
 
     @property
@@ -72,6 +68,10 @@ class Season(db.Model):
     season_number = db.Column(db.Integer, nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey('media.id'), nullable=False)
     episodes = db.relationship('Episode', backref='season', cascade="all, delete-orphan", order_by="Episode.episode_number")
+
+    # --- NEW: Columns for per-season rating and year ---
+    rating = db.Column(db.Float)
+    year = db.Column(db.String(4))
 
     @property
     def average_score(self):
