@@ -65,11 +65,13 @@
                             Rating: <input type="text" name="season_rating_{{ loop.index }}" value="{{ season.rating or '' }}" style="width: 60px;" placeholder="0-10">
                         </div>
                         <div class="episodes-container">
+                            {# --- CORRECTED LOOP --- #}
+                            {% set outer_loop_index = loop.index %}
                             {% for episode in season.episodes %}
                             <div class="episode-row">
-                                E#: <input type="number" name="ep_number_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.episode_number }}" style="width: 60px;">
-                                Title: <input type="text" name="ep_title_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.title }}">
-                                Rating: <input type="text" name="ep_rating_{{ loop.parent.loop.index }}_{{ loop.index }}" value="{{ episode.rating or '' }}" style="width: 60px;">
+                                E#: <input type="number" name="ep_number_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.episode_number }}" style="width: 60px;">
+                                Title: <input type="text" name="ep_title_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.title }}">
+                                Rating: <input type="text" name="ep_rating_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.rating or '' }}" style="width: 60px;">
                             </div>
                             {% endfor %}
                         </div>
