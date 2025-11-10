@@ -32,7 +32,6 @@
                 <option value="title_asc" {% if current_sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
                 <option value="score_desc" {% if current_sort == 'score_desc' %}selected{% endif %}>Highest Rated</option>
                 <option value="score_asc" {% if current_sort == 'score_asc' %}selected{% endif %}>Lowest Rated</option>
-                <!-- NEW: Sorting options for year -->
                 <option value="year_desc" {% if current_sort == 'year_desc' %}selected{% endif %}>Year (Newest)</option>
                 <option value="year_asc" {% if current_sort == 'year_asc' %}selected{% endif %}>Year (Oldest)</option>
             </select>
@@ -44,17 +43,21 @@
         <span class="legend-item"><span class="legend-color-box legend-tv"></span> TV Show</span>
         <span class="legend-item"><span class="legend-color-box legend-album"></span> Album</span>
         <span class="legend-item"><span class="legend-color-box legend-single"></span> Single</span>
+        {% if current_filter == 'songs' %}
+        <span class="legend-item"><span class="legend-color-box legend-album-track"></span> Album Track</span>
+        {% endif %}
     </div>
 
     <div class="media-grid">
         {% for media in all_media %}
             <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
                class="media-card 
-                    {% if media.media_type in ['album', 'single'] %}media-card-square{% endif %}
+                    {% if media.media_type in ['album', 'single', 'album_track'] %}media-card-square{% endif %}
                     {% if media.media_type == 'movie' %}movie-border
                     {% elif media.media_type == 'tv_show' %}tv-border
                     {% elif media.media_type == 'album' %}album-border
                     {% elif media.media_type == 'single' %}single-border
+                    {% elif media.media_type == 'album_track' %}album_track-border
                     {% endif %}">
                 
                 <div class="media-card-poster">
@@ -70,6 +73,7 @@
                     {% elif media.media_type == 'tv_show' %}tv-type
                     {% elif media.media_type == 'album' %}album-type
                     {% elif media.media_type == 'single' %}single-type
+                    {% elif media.media_type == 'album_track' %}album_track-type
                     {% endif %}">
                     <h3>{{ media.title }}</h3>
                     {% if media.creator %}
