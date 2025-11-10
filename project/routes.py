@@ -26,41 +26,104 @@ def index():
     filter_type = request.args.get('filter', 'all')
     tag_filter = request.args.get('tag', 'all')
 
-    query = Media.query
-
-    if filter_type != 'all':
-        query = query.filter(Media.media_type == filter_type)
-
-    if tag_filter != 'all':
-        try:
-            tag_id = int(tag_filter)
-            media_ids_with_tag = db.session.query(media_tags.c.media_id).filter_by(tag_id=tag_id)
-            query = query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
-        except (ValueError, TypeError):
-            pass
-    
-    all_media_list = query.all()
-
-    def get_year_for_sort(media_item):
-        if not media_item.years:
-            return 0
-        try:
-            return int(media_item.years[:4])
-        except (ValueError, IndexError):
-            return 0
-
-    if sort_by == 'score_desc':
-        all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
-    elif sort_by == 'score_asc':
-        all_media_list.sort(key=lambda m: m.overall_score)
-    elif sort_by == 'year_desc':
-        all_media_list.sort(key=get_year_for_sort, reverse=True)
-    elif sort_by == 'year_asc':
-        all_media_list.sort(key=get_year_for_sort)
-    else:
-        all_media_list.sort(key=lambda m: m.title.lower())
-    
     all_tags = Tag.query.order_by(Tag.name).all()
+
+    if filter_type == 'songs':
+        # --- NEW LOGIC FOR 'SONGS' FILTER ---
+        all_songs = []
+        
+        # 1. Get all 'single' media type
+        singles_query = Media.query.filter_by(media_type='single')
+        if tag_filter != 'all':
+            try:
+                tag_id = int(tag_filter)
+                media_ids_with_tag = db.session.query(media_tags.c.media_id).filter_by(tag_id=tag_id)
+                singles_query = singles_query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
+            except (ValueError, TypeError):
+                pass
+        
+        for s in singles_query.all():
+            all_songs.append({
+                'id': s.id,
+                'title': s.title,
+                'creator': s.creator,
+                'years': s.years,
+                'poster_img': s.poster_img,
+                'overall_score': s.overall_score if s.overall_score is not None else 0.0,
+                'media_type': 'single' # For styling
+            })
+
+        # 2. Get all tracks from 'album' media type
+        albums_query = Media.query.filter_by(media_type='album')
+        if tag_filter != 'all':
+            try:
+                tag_id = int(tag_filter)
+                media_ids_with_tag = db.session.query(media_tags.c.media_id).filter_by(tag_id=tag_id)
+                albums_query = albums_query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
+            except (ValueError, TypeError):
+                pass
+
+        for album in albums_query.all():
+            for track in album.tracks:
+                all_songs.append({
+                    'id': album.id, # Link to the album page
+                    'title': track.title,
+                    'creator': album.creator,
+                    'years': album.years,
+                    'poster_img': album.poster_img,
+                    'overall_score': track.rating if track.rating is not None else 0.0,
+                    'media_type': 'single' # Treat as single for square styling
+                })
+        
+        all_media_list = all_songs
+
+        def get_year_for_sort_song(song_item):
+            if not song_item['years']: return 0
+            try: return int(song_item['years'][:4])
+            except (ValueError, IndexError): return 0
+
+        if sort_by == 'score_desc':
+            all_media_list.sort(key=lambda m: m['overall_score'], reverse=True)
+        elif sort_by == 'score_asc':
+            all_media_list.sort(key=lambda m: m['overall_score'])
+        elif sort_by == 'year_desc':
+            all_media_list.sort(key=get_year_for_sort_song, reverse=True)
+        elif sort_by == 'year_asc':
+            all_media_list.sort(key=get_year_for_sort_song)
+        else: # title_asc
+            all_media_list.sort(key=lambda m: m['title'].lower())
+
+    else:
+        # --- ORIGINAL LOGIC FOR OTHER FILTERS ---
+        query = Media.query
+        if filter_type != 'all':
+            query = query.filter(Media.media_type == filter_type)
+
+        if tag_filter != 'all':
+            try:
+                tag_id = int(tag_filter)
+                media_ids_with_tag = db.session.query(media_tags.c.media_id).filter_by(tag_id=tag_id)
+                query = query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
+            except (ValueError, TypeError):
+                pass
+        
+        all_media_list = query.all()
+
+        def get_year_for_sort(media_item):
+            if not media_item.years: return 0
+            try: return int(media_item.years[:4])
+            except (ValueError, IndexError): return 0
+
+        if sort_by == 'score_desc':
+            all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
+        elif sort_by == 'score_asc':
+            all_media_list.sort(key=lambda m: m.overall_score)
+        elif sort_by == 'year_desc':
+            all_media_list.sort(key=get_year_for_sort, reverse=True)
+        elif sort_by == 'year_asc':
+            all_media_list.sort(key=get_year_for_sort)
+        else:
+            all_media_list.sort(key=lambda m: m.title.lower())
 
     return render_template('index.html', 
                            all_media=all_media_list, 
@@ -68,6 +131,7 @@ def index():
                            current_sort=sort_by, 
                            current_filter=filter_type,
                            current_tag=tag_filter)
+
 
 @main.route('/media/<int:media_id>')
 def media_page(media_id):
@@ -142,7 +206,6 @@ def edit_media(media_id):
                 if s_key.startswith('season_number_'):
                     s_idx = s_key.split('_')[-1]
                     
-                    # --- NEW: Get season-specific data from form ---
                     season_rating_str = request.form.get(f'season_rating_{s_idx}', '')
                     season_rating = float(season_rating_str) if season_rating_str else None
                     season_year = request.form.get(f'season_year_{s_idx}', '')
