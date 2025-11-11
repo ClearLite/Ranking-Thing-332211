@@ -29,10 +29,8 @@ def index():
     all_tags = Tag.query.order_by(Tag.name).all()
 
     if filter_type == 'songs':
-        # --- NEW LOGIC FOR 'SONGS' FILTER ---
         all_songs = []
         
-        # 1. Get all 'single' media type
         singles_query = Media.query.filter_by(media_type='single')
         if tag_filter != 'all':
             try:
@@ -50,10 +48,9 @@ def index():
                 'years': s.years,
                 'poster_img': s.poster_img,
                 'overall_score': s.overall_score if s.overall_score is not None else 0.0,
-                'media_type': 'single' # For styling
+                'media_type': 'single'
             })
 
-        # 2. Get all tracks from 'album' media type
         albums_query = Media.query.filter_by(media_type='album')
         if tag_filter != 'all':
             try:
@@ -66,13 +63,15 @@ def index():
         for album in albums_query.all():
             for track in album.tracks:
                 all_songs.append({
-                    'id': album.id, # Link to the album page
+                    'id': album.id,
                     'title': track.title,
                     'creator': album.creator,
                     'years': album.years,
                     'poster_img': album.poster_img,
                     'overall_score': track.rating if track.rating is not None else 0.0,
-                    'media_type': 'single' # Treat as single for square styling
+                    # --- THIS IS THE FIX ---
+                    # It now correctly identifies album tracks for the template.
+                    'media_type': 'album_track' 
                 })
         
         all_media_list = all_songs
@@ -90,11 +89,10 @@ def index():
             all_media_list.sort(key=get_year_for_sort_song, reverse=True)
         elif sort_by == 'year_asc':
             all_media_list.sort(key=get_year_for_sort_song)
-        else: # title_asc
+        else:
             all_media_list.sort(key=lambda m: m['title'].lower())
 
     else:
-        # --- ORIGINAL LOGIC FOR OTHER FILTERS ---
         query = Media.query
         if filter_type != 'all':
             query = query.filter(Media.media_type == filter_type)
