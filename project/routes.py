@@ -28,9 +28,9 @@ def index():
 
     all_tags = Tag.query.order_by(Tag.name).all()
 
+    # ... (Logic for songs filter remains the same as previous fix, ensuring consistent list building)
     if filter_type == 'songs':
         all_songs = []
-        
         singles_query = Media.query.filter_by(media_type='single')
         if tag_filter != 'all':
             try:
@@ -69,11 +69,8 @@ def index():
                     'years': album.years,
                     'poster_img': album.poster_img,
                     'overall_score': track.rating if track.rating is not None else 0.0,
-                    # --- THIS IS THE FIX ---
-                    # It now correctly identifies album tracks for the template.
-                    'media_type': 'album_track' 
+                    'media_type': 'album_track'
                 })
-        
         all_media_list = all_songs
 
         def get_year_for_sort_song(song_item):
@@ -81,22 +78,16 @@ def index():
             try: return int(song_item['years'][:4])
             except (ValueError, IndexError): return 0
 
-        if sort_by == 'score_desc':
-            all_media_list.sort(key=lambda m: m['overall_score'], reverse=True)
-        elif sort_by == 'score_asc':
-            all_media_list.sort(key=lambda m: m['overall_score'])
-        elif sort_by == 'year_desc':
-            all_media_list.sort(key=get_year_for_sort_song, reverse=True)
-        elif sort_by == 'year_asc':
-            all_media_list.sort(key=get_year_for_sort_song)
-        else:
-            all_media_list.sort(key=lambda m: m['title'].lower())
+        if sort_by == 'score_desc': all_media_list.sort(key=lambda m: m['overall_score'], reverse=True)
+        elif sort_by == 'score_asc': all_media_list.sort(key=lambda m: m['overall_score'])
+        elif sort_by == 'year_desc': all_media_list.sort(key=get_year_for_sort_song, reverse=True)
+        elif sort_by == 'year_asc': all_media_list.sort(key=get_year_for_sort_song)
+        else: all_media_list.sort(key=lambda m: m['title'].lower())
 
     else:
         query = Media.query
         if filter_type != 'all':
             query = query.filter(Media.media_type == filter_type)
-
         if tag_filter != 'all':
             try:
                 tag_id = int(tag_filter)
@@ -104,7 +95,6 @@ def index():
                 query = query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
             except (ValueError, TypeError):
                 pass
-        
         all_media_list = query.all()
 
         def get_year_for_sort(media_item):
@@ -112,24 +102,13 @@ def index():
             try: return int(media_item.years[:4])
             except (ValueError, IndexError): return 0
 
-        if sort_by == 'score_desc':
-            all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
-        elif sort_by == 'score_asc':
-            all_media_list.sort(key=lambda m: m.overall_score)
-        elif sort_by == 'year_desc':
-            all_media_list.sort(key=get_year_for_sort, reverse=True)
-        elif sort_by == 'year_asc':
-            all_media_list.sort(key=get_year_for_sort)
-        else:
-            all_media_list.sort(key=lambda m: m.title.lower())
+        if sort_by == 'score_desc': all_media_list.sort(key=lambda m: m.overall_score, reverse=True)
+        elif sort_by == 'score_asc': all_media_list.sort(key=lambda m: m.overall_score)
+        elif sort_by == 'year_desc': all_media_list.sort(key=get_year_for_sort, reverse=True)
+        elif sort_by == 'year_asc': all_media_list.sort(key=get_year_for_sort)
+        else: all_media_list.sort(key=lambda m: m.title.lower())
 
-    return render_template('index.html', 
-                           all_media=all_media_list, 
-                           all_tags=all_tags,
-                           current_sort=sort_by, 
-                           current_filter=filter_type,
-                           current_tag=tag_filter)
-
+    return render_template('index.html', all_media=all_media_list, all_tags=all_tags, current_sort=sort_by, current_filter=filter_type, current_tag=tag_filter)
 
 @main.route('/media/<int:media_id>')
 def media_page(media_id):
@@ -172,6 +151,7 @@ def edit_media(media_id):
     media_tag_ids = [tag.id for tag in media.tags]
 
     if form.validate_on_submit():
+        # 1. Update Basic Info
         media.media_type = form.media_type.data
         media.title = form.title.data
         media.creator = form.creator.data
@@ -183,23 +163,32 @@ def edit_media(media_id):
         if form.banner_img.data:
             media.banner_img = save_file(form.banner_img.data)
 
+        # 2. Update Tags
         delete_stmt = media_tags.delete().where(media_tags.c.media_id == media.id)
         db.session.execute(delete_stmt)
-
         selected_tag_ids = request.form.getlist('tags', type=int)
         for tag_id in selected_tag_ids:
             insert_stmt = media_tags.insert().values(media_id=media.id, tag_id=tag_id)
             db.session.execute(insert_stmt)
 
-        if media.media_type == 'tv_show':
-            for track in media.tracks: db.session.delete(track)
-        elif media.media_type == 'album':
-            for season in media.seasons: db.session.delete(season)
+        # 3. Wipe existing Seasons/Tracks (Fixes duplication and allows deletion)
+        # We iterate over the objects so the Session knows they are being deleted.
+        # Because cascading is on, this deletes associated Episodes too.
+        if media.seasons:
+            for season in media.seasons:
+                db.session.delete(season)
         
-        db.session.commit()
+        if media.tracks:
+            for track in media.tracks:
+                db.session.delete(track)
         
+        # Flush the deletions to the DB before adding new ones
+        db.session.flush()
+
+        # 4. Re-create from Form Data
         if media.media_type == 'tv_show':
-            Season.query.filter_by(media_id=media.id).delete()
+            # Logic: We look for 'season_number_X' keys.
+            # We create the Season, then find related 'ep_number_X_Y' keys.
             for s_key, s_val in request.form.items():
                 if s_key.startswith('season_number_'):
                     s_idx = s_key.split('_')[-1]
@@ -215,26 +204,38 @@ def edit_media(media_id):
                         media_id=media.id
                     )
                     db.session.add(new_season)
-                    db.session.flush()
+                    db.session.flush() # Need ID for episodes
 
                     for e_key, e_val in request.form.items():
+                        # Look for episodes belonging to this season index (s_idx)
                         if e_key.startswith(f'ep_number_{s_idx}_'):
                             e_idx = e_key.split('_')[-1]
                             ep_title = request.form.get(f'ep_title_{s_idx}_{e_idx}', '')
                             ep_rating_str = request.form.get(f'ep_rating_{s_idx}_{e_idx}', '')
                             ep_rating = float(ep_rating_str) if ep_rating_str else None
-                            new_ep = Episode(episode_number=int(e_val), title=ep_title, rating=ep_rating, season_id=new_season.id)
+                            
+                            new_ep = Episode(
+                                episode_number=int(e_val), 
+                                title=ep_title, 
+                                rating=ep_rating, 
+                                season_id=new_season.id
+                            )
                             db.session.add(new_ep)
         
         elif media.media_type == 'album':
-            Track.query.filter_by(media_id=media.id).delete()
             for t_key, t_val in request.form.items():
                 if t_key.startswith('track_number_'):
                     t_idx = t_key.split('_')[-1]
                     track_title = request.form.get(f'track_title_{t_idx}', '')
                     track_rating_str = request.form.get(f'track_rating_{t_idx}', '')
                     track_rating = float(track_rating_str) if track_rating_str else None
-                    new_track = Track(track_number=int(t_val), title=track_title, rating=track_rating, media_id=media.id)
+                    
+                    new_track = Track(
+                        track_number=int(t_val), 
+                        title=track_title, 
+                        rating=track_rating, 
+                        media_id=media.id
+                    )
                     db.session.add(new_track)
 
         db.session.commit()
