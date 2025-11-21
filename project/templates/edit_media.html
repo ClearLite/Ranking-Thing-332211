@@ -63,15 +63,16 @@
                             Season #: <input type="number" name="season_number_{{ loop.index }}" value="{{ season.season_number }}" style="width: 60px;">
                             Year: <input type="text" name="season_year_{{ loop.index }}" value="{{ season.year or '' }}" style="width: 80px;" placeholder="YYYY">
                             Rating: <input type="text" name="season_rating_{{ loop.index }}" value="{{ season.rating or '' }}" style="width: 60px;" placeholder="0-10">
+                            <button type="button" class="btn-danger" style="margin-left: auto; padding: 5px 10px;" onclick="removeElement(this, 'season')">Delete Season</button>
                         </div>
                         <div class="episodes-container">
-                            {# --- CORRECTED LOOP --- #}
                             {% set outer_loop_index = loop.index %}
                             {% for episode in season.episodes %}
                             <div class="episode-row">
                                 E#: <input type="number" name="ep_number_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.episode_number }}" style="width: 60px;">
                                 Title: <input type="text" name="ep_title_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.title }}">
                                 Rating: <input type="text" name="ep_rating_{{ outer_loop_index }}_{{ loop.index }}" value="{{ episode.rating or '' }}" style="width: 60px;">
+                                <button type="button" class="btn-danger" style="margin-left: 10px; padding: 2px 8px;" onclick="removeElement(this, 'episode')">X</button>
                             </div>
                             {% endfor %}
                         </div>
@@ -80,7 +81,8 @@
                     {% endfor %}
                 {% endif %}
             </div>
-            <button type="button" onclick="addSeason()">+ Add Season</button>
+            <br>
+            <button type="button" class="btn btn-primary" onclick="addSeason()">+ Add Season</button>
         </div>
 
         <div id="album-fields">
@@ -92,6 +94,7 @@
                         T#: <input type="number" name="track_number_{{ loop.index }}" value="{{ track.track_number }}" style="width: 60px;">
                         Title: <input type="text" name="track_title_{{ loop.index }}" value="{{ track.title }}">
                         Rating: <input type="text" name="track_rating_{{ loop.index }}" value="{{ track.rating or '' }}" style="width: 60px;">
+                        <button type="button" class="btn-danger" style="margin-left: 10px; padding: 2px 8px;" onclick="removeElement(this, 'track')">X</button>
                     </div>
                     {% endfor %}
                 {% endif %}
@@ -125,17 +128,20 @@
             toggleFields();
         });
 
-        let seasonCount = {{ media.seasons|length if media and media.media_type == 'tv_show' else 0 }};
+        // Counter needs to be high enough to avoid conflict with existing IDs
+        let counter = 1000; 
+
         function addSeason() {
-            seasonCount++;
+            counter++;
             const container = document.getElementById('seasons-container');
             const newSeason = document.createElement('div');
             newSeason.className = 'season-block';
             newSeason.innerHTML = `
                 <div class="season-inputs">
-                    Season #: <input type="number" name="season_number_${seasonCount}" value="${seasonCount}" style="width: 60px;">
-                    Year: <input type="text" name="season_year_${seasonCount}" value="" style="width: 80px;" placeholder="YYYY">
-                    Rating: <input type="text" name="season_rating_${seasonCount}" value="" style="width: 60px;" placeholder="0-10">
+                    Season #: <input type="number" name="season_number_${counter}" value="" style="width: 60px;">
+                    Year: <input type="text" name="season_year_${counter}" value="" style="width: 80px;" placeholder="YYYY">
+                    Rating: <input type="text" name="season_rating_${counter}" value="" style="width: 60px;" placeholder="0-10">
+                    <button type="button" class="btn-danger" style="margin-left: auto; padding: 5px 10px;" onclick="removeElement(this, 'season')">Delete Season</button>
                 </div>
                 <div class="episodes-container"></div>
                 <button type="button" onclick="addEpisode(this.parentElement)">+ Add Episode</button>`;
@@ -143,29 +149,51 @@
         }
 
         function addEpisode(seasonBlock) {
+            counter++;
             const container = seasonBlock.querySelector('.episodes-container');
-            const seasonIndex = Array.from(document.getElementById('seasons-container').children).indexOf(seasonBlock) + 1;
+            
+            // Find the season index ID from the season input name
+            const seasonInput = seasonBlock.querySelector('input[name^="season_number_"]');
+            const seasonIndex = seasonInput.name.split('_').pop();
+            
+            // Calculate next episode number for UI niceness
             const episodeCount = container.children.length + 1;
+            
             const newEpisode = document.createElement('div');
             newEpisode.className = 'episode-row';
             newEpisode.innerHTML = `
-                E#: <input type="number" name="ep_number_${seasonIndex}_${episodeCount}" value="${episodeCount}" style="width: 60px;">
-                Title: <input type="text" name="ep_title_${seasonIndex}_${episodeCount}">
-                Rating: <input type="text" name="ep_rating_${seasonIndex}_${episodeCount}" style="width: 60px;">`;
+                E#: <input type="number" name="ep_number_${seasonIndex}_${counter}" value="${episodeCount}" style="width: 60px;">
+                Title: <input type="text" name="ep_title_${seasonIndex}_${counter}">
+                Rating: <input type="text" name="ep_rating_${seasonIndex}_${counter}" style="width: 60px;">
+                <button type="button" class="btn-danger" style="margin-left: 10px; padding: 2px 8px;" onclick="removeElement(this, 'episode')">X</button>`;
             container.appendChild(newEpisode);
         }
         
-        let trackCount = {{ media.tracks|length if media and media.media_type == 'album' else 0 }};
         function addTrack() {
-            trackCount++;
+            counter++;
             const container = document.getElementById('tracks-container');
+            const trackCount = container.children.length + 1;
+            
             const newTrack = document.createElement('div');
             newTrack.className = 'track-row';
             newTrack.innerHTML = `
-                T#: <input type="number" name="track_number_${trackCount}" value="${trackCount}" style="width: 60px;">
-                Title: <input type="text" name="track_title_${trackCount}">
-                Rating: <input type="text" name="track_rating_${trackCount}" style="width: 60px;">`;
+                T#: <input type="number" name="track_number_${counter}" value="${trackCount}" style="width: 60px;">
+                Title: <input type="text" name="track_title_${counter}">
+                Rating: <input type="text" name="track_rating_${counter}" style="width: 60px;">
+                <button type="button" class="btn-danger" style="margin-left: 10px; padding: 2px 8px;" onclick="removeElement(this, 'track')">X</button>`;
             container.appendChild(newTrack);
+        }
+
+        function removeElement(btn, type) {
+            if (confirm('Are you sure you want to remove this?')) {
+                if (type === 'season') {
+                    btn.closest('.season-block').remove();
+                } else if (type === 'episode') {
+                    btn.closest('.episode-row').remove();
+                } else if (type === 'track') {
+                    btn.closest('.track-row').remove();
+                }
+            }
         }
     </script>
 {% endblock %}
