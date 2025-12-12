@@ -38,20 +38,73 @@
         </div>
     </form>
 
-    <div class="legend">
-        <span class="legend-item"><span class="legend-color-box legend-movie"></span> Movie</span>
-        <span class="legend-item"><span class="legend-color-box legend-tv"></span> TV Show</span>
-        <span class="legend-item"><span class="legend-color-box legend-album"></span> Album</span>
-        <span class="legend-item"><span class="legend-color-box legend-single"></span> Single</span>
-        {% if current_filter == 'songs' %}
-        <span class="legend-item"><span class="legend-color-box legend-album-track"></span> Album Track</span>
-        {% endif %}
+    <div class="legend-container">
+        <div class="legend-section-title">Media Types</div>
+        <div class="type-legend">
+            <span class="legend-item"><span class="legend-color-box legend-movie"></span> Movie</span>
+            <span class="legend-item"><span class="legend-color-box legend-tv"></span> TV Show</span>
+            <span class="legend-item"><span class="legend-color-box legend-album"></span> Album</span>
+            <span class="legend-item"><span class="legend-color-box legend-single"></span> Single</span>
+            {% if current_filter == 'songs' %}
+            <span class="legend-item"><span class="legend-color-box legend-album-track"></span> Album Track</span>
+            {% endif %}
+        </div>
+
+        <div class="legend-section-title">Rating Score Guide</div>
+        <div class="rating-legend">
+            <div class="legend-entry">
+                <span class="legend-box awesome">9.0+</span>
+                <span class="legend-label">Awesome</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box great">8.0+</span>
+                <span class="legend-label">Great (8.0 - 8.9)</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box good">7.0+</span>
+                <span class="legend-label">Good (7.0 - 7.9)</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box okay">6.0+</span>
+                <span class="legend-label">Okay (6.0 - 6.9)</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box bad">5.0+</span>
+                <span class="legend-label">Bad (5.0 - 5.9)</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box garbage">&lt;5</span>
+                <span class="legend-label">Garbage (0.0 - 4.9)</span>
+            </div>
+
+            <div class="legend-entry">
+                <span class="legend-box legendary"></span>
+                <span class="legend-label">Rainbow (See Rules)</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+             <div class="legend-section-title" style="margin-bottom: 5px;">🌈 Legendary Status (Rainbow Border)</div>
+             <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; color: #ccc;">
+                <li><strong>Albums:</strong> 8.5+</li>
+                <li><strong>Movies / TV Shows:</strong> 9.0+</li>
+                <li><strong>Singles / Songs:</strong> 9.5+</li>
+             </ul>
+        </div>
     </div>
 
     <div class="media-grid">
         {% for media in all_media %}
+            {% set rating_class = get_rating_class(media.overall_score, media.media_type, 'index') %}
+            
             <a href="{{ url_for('main.media_page', media_id=media.id) }}" 
                class="media-card 
+                    {% if rating_class == 'legendary' %}legendary-card{% endif %}
                     {% if media.media_type in ['album', 'single', 'album_track'] %}media-card-square{% endif %}
                     {% if media.media_type == 'movie' %}movie-border
                     {% elif media.media_type == 'tv_show' %}tv-border
@@ -60,31 +113,33 @@
                     {% elif media.media_type == 'album_track' %}album_track-border
                     {% endif %}">
                 
-                <div class="media-card-poster">
-                    {% if media.poster_img %}
-                        <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
-                    {% else %}
-                        <div class="placeholder">?</div>
-                    {% endif %}
-                </div>
+                <div class="media-card-inner">
+                    <div class="media-card-poster">
+                        {% if media.poster_img %}
+                            <img src="{{ url_for('static', filename='uploads/' + media.poster_img) }}" alt="{{ media.title }} Poster">
+                        {% else %}
+                            <div class="placeholder">?</div>
+                        {% endif %}
+                    </div>
 
-                <div class="media-card-info 
-                    {% if media.media_type == 'movie' %}movie-type
-                    {% elif media.media_type == 'tv_show' %}tv-type
-                    {% elif media.media_type == 'album' %}album-type
-                    {% elif media.media_type == 'single' %}single-type
-                    {% elif media.media_type == 'album_track' %}album_track-type
-                    {% endif %}">
-                    <h3>{{ media.title }}</h3>
-                    {% if media.creator %}
-                        <p class="creator">{{ media.creator }}</p>
-                    {% endif %}
-                    
-                    {% if media.years %}
-                        <p class="media-card-year">{{ media.years }}</p>
-                    {% endif %}
+                    <div class="media-card-info 
+                        {% if media.media_type == 'movie' %}movie-type
+                        {% elif media.media_type == 'tv_show' %}tv-type
+                        {% elif media.media_type == 'album' %}album-type
+                        {% elif media.media_type == 'single' %}single-type
+                        {% elif media.media_type == 'album_track' %}album_track-type
+                        {% endif %}">
+                        <h3>{{ media.title }}</h3>
+                        {% if media.creator %}
+                            <p class="creator">{{ media.creator }}</p>
+                        {% endif %}
+                        
+                        {% if media.years %}
+                            <p class="media-card-year">{{ media.years }}</p>
+                        {% endif %}
 
-                    <p class="score">⭐ {{ media.overall_score }}</p>
+                        <p class="score">⭐ {{ media.overall_score }}</p>
+                    </div>
                 </div>
             </a>
         {% else %}
