@@ -33,7 +33,7 @@
                 
                 <div class="score-display-container">
                     <div class="score-label">Official Score</div>
-                    <div class="overall-score-box {{ get_rating_class(media.overall_score) }}">
+                    <div class="overall-score-box {{ get_rating_class(media.overall_score, media.media_type, 'detail') }}">
                         {{ media.overall_score }}
                     </div>
                 </div>
@@ -43,6 +43,40 @@
                     (Average of parts: {{ media.calculated_average_score }})
                 </div>
                 {% endif %}
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase;">Rating Key</div>
+                    <div class="rating-legend">
+                        <div class="legend-entry">
+                            <span class="legend-box awesome">9.0+</span>
+                            <span class="legend-label">Awesome</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box great">8.0+</span>
+                            <span class="legend-label">Great</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box good">7.0+</span>
+                            <span class="legend-label">Good</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box okay">6.0+</span>
+                            <span class="legend-label">Okay</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box bad">5.0+</span>
+                            <span class="legend-label">Bad</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box garbage">&lt;5</span>
+                            <span class="legend-label">Garbage</span>
+                        </div>
+                        <div class="legend-entry">
+                            <span class="legend-box legendary"></span>
+                            <span class="legend-label">Rainbow (See Rules)</span>
+                        </div>
+                    </div>
+                </div>
 
                 {% if current_user.is_authenticated %}
                     <div class="admin-actions">
@@ -63,7 +97,7 @@
                 <div class="season-details">
                     {% if season.year %}<span class="season-year">{{ season.year }}</span>{% endif %}
                     {% if season.rating is not none %}
-                        <div class="season-score-box {{ get_rating_class(season.rating) }}">
+                        <div class="season-score-box {{ get_rating_class(season.rating, 'tv_show', 'detail') }}">
                             {{ season.rating }}
                         </div>
                     {% endif %}
