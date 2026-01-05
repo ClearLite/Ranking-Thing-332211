@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Database & runtime data
+instance/
+project/static/uploads/
+
+# OS junk
+.DS_Store
