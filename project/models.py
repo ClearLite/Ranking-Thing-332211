@@ -6,7 +6,6 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from . import db
-from .models import User, Media, Season, Episode, Track, Tag, media_tags
 from .forms import LoginForm, MediaForm
 
 main = Blueprint('main', __name__)
