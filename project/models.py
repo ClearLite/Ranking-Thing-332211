@@ -30,6 +30,19 @@ class Media(db.Model):
     seasons = db.relationship('Season', backref='media', cascade="all, delete-orphan")
     tags = db.relationship('Tag', secondary=media_tags, back_populates='media_items')
 
+    @property
+    def overall_score(self):
+        """
+        Returns a unified score used by templates.
+        - For albums: average track rating if available, otherwise official_rating
+        - For singles, movies, TV shows: official_rating
+        """
+        if self.media_type == 'album' and self.tracks:
+            ratings = [t.rating for t in self.tracks if t.rating is not None]
+            if ratings:
+                return sum(ratings) / len(ratings)
+        return self.official_rating or 0.0
+
 class Track(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
