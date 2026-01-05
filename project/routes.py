@@ -1,12 +1,11 @@
 # project/routes.py
 
 import os
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from . import db
-from .models import User, Media, Season, Episode, Track, Tag, media_tags
 from .forms import LoginForm, MediaForm
 
 main = Blueprint('main', __name__)
@@ -15,18 +14,13 @@ def get_rating_class(rating, media_type=None, context='general'):
     """
     Determines the CSS class for a rating based on score, media type, and page context.
     """
-    if rating is None: return "garbage"
+    if rating is None:
+        return "garbage"
     
-    # Default threshold for generic items (like tracks without specific type passed)
-    threshold = 9.5 
+    threshold = 9.5
 
-    # --- CUSTOM THRESHOLDS ---
     if media_type == 'album':
-        # User requested: Index = 8.5, Detail Page = 8.75
-        if context == 'detail':
-            threshold = 8.75
-        else:
-            threshold = 8.5
+        threshold = 8.75 if context == 'detail' else 8.5
     elif media_type == 'single':
         threshold = 9.5
     elif media_type == 'movie':
@@ -35,11 +29,8 @@ def get_rating_class(rating, media_type=None, context='general'):
         threshold = 9.0
     elif media_type == 'album_track':
         threshold = 9.5
-    
-    # Check Legendary Status
-    if rating >= threshold: return "legendary"
 
-    # Standard Rating Classes
+    if rating >= threshold: return "legendary"
     if rating >= 9.0: return "awesome"
     if rating >= 8.0: return "great"
     if rating >= 7.0: return "good"
@@ -47,8 +38,13 @@ def get_rating_class(rating, media_type=None, context='general'):
     if rating >= 5.0: return "bad"
     return "garbage"
 
+# -------------------
+# ROUTES
+# -------------------
+
 @main.route('/')
 def index():
+    from .models import Media, Tag, media_tags  # lazy import
     sort_by = request.args.get('sort', 'title_asc')
     filter_type = request.args.get('filter', 'all')
     tag_filter = request.args.get('tag', 'all')
@@ -57,6 +53,7 @@ def index():
 
     if filter_type == 'songs':
         all_songs = []
+
         singles_query = Media.query.filter_by(media_type='single')
         if tag_filter != 'all':
             try:
@@ -65,7 +62,7 @@ def index():
                 singles_query = singles_query.filter(Media.id.in_([item[0] for item in media_ids_with_tag]))
             except (ValueError, TypeError):
                 pass
-        
+
         for s in singles_query.all():
             all_songs.append({
                 'id': s.id,
@@ -73,7 +70,7 @@ def index():
                 'creator': s.creator,
                 'years': s.years,
                 'poster_img': s.poster_img,
-                'overall_score': s.overall_score if s.overall_score is not None else 0.0,
+                'overall_score': s.overall_score or 0.0,
                 'media_type': 'single'
             })
 
@@ -94,9 +91,10 @@ def index():
                     'creator': album.creator,
                     'years': album.years,
                     'poster_img': album.poster_img,
-                    'overall_score': track.rating if track.rating is not None else 0.0,
+                    'overall_score': track.rating or 0.0,
                     'media_type': 'album_track'
                 })
+
         all_media_list = all_songs
 
         def get_year_for_sort_song(song_item):
@@ -109,7 +107,6 @@ def index():
         elif sort_by == 'year_desc': all_media_list.sort(key=get_year_for_sort_song, reverse=True)
         elif sort_by == 'year_asc': all_media_list.sort(key=get_year_for_sort_song)
         else: all_media_list.sort(key=lambda m: m['title'].lower())
-
     else:
         query = Media.query
         if filter_type != 'all':
@@ -134,7 +131,6 @@ def index():
         elif sort_by == 'year_asc': all_media_list.sort(key=get_year_for_sort)
         else: all_media_list.sort(key=lambda m: m.title.lower())
 
-    # UPDATED: Passing get_rating_class to template
     return render_template('index.html', 
                            all_media=all_media_list, 
                            all_tags=all_tags,
@@ -145,11 +141,13 @@ def index():
 
 @main.route('/media/<int:media_id>')
 def media_page(media_id):
+    from .models import Media  # lazy import
     media_item = Media.query.get_or_404(media_id)
     return render_template('media_page.html', media=media_item, get_rating_class=get_rating_class)
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    from .models import User  # lazy import
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     form = LoginForm()
@@ -169,7 +167,6 @@ def logout():
     return redirect(url_for('main.index'))
 
 def save_file(file_storage):
-    from flask import current_app
     filename = secure_filename(file_storage.filename)
     file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file_storage.save(file_path)
@@ -178,6 +175,7 @@ def save_file(file_storage):
 @main.route('/edit_media/<int:media_id>', methods=['GET', 'POST'])
 @login_required
 def edit_media(media_id):
+    from .models import Media, Season, Episode, Track, Tag, media_tags  # lazy import
     media = Media.query.get_or_404(media_id)
     form = MediaForm(obj=media)
     all_tags = Tag.query.order_by(Tag.name).all()
@@ -255,6 +253,7 @@ def edit_media(media_id):
 @main.route('/add_media', methods=['GET', 'POST'])
 @login_required
 def add_media():
+    from .models import Media, Tag, media_tags  # lazy import
     form = MediaForm()
     if form.validate_on_submit():
         new_media = Media(
@@ -280,6 +279,7 @@ def add_media():
 @main.route('/delete_media/<int:media_id>', methods=['POST'])
 @login_required
 def delete_media(media_id):
+    from .models import Media, media_tags  # lazy import
     media_to_delete = Media.query.get_or_404(media_id)
     
     delete_stmt = media_tags.delete().where(media_tags.c.media_id == media_id)
